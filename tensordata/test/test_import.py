@@ -20,3 +20,14 @@ def test_zohar():
     shp = d.tensor.shape
     for ii in range(4):
         assert shp[ii] == len(d.axes[ii])
+
+def test_kaplonek():
+    from ..kaplonek import SpaceX, MGH
+    s = SpaceX()
+    shp = s.tensor.shape
+    for ii in range(3):
+        assert shp[ii] == len(s.axes[ii])
+    m = MGH()
+    mhp = m.tensor.shape
+    for ii in range(3):
+        assert mhp[ii] == len(m.axes[ii])
