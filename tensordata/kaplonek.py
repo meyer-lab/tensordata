@@ -1,6 +1,7 @@
 from os.path import join, dirname
 import numpy as np
 import pandas as pd
+from .__init__ import Bunch
 
 path_here = dirname(dirname(__file__))
 
@@ -60,6 +61,13 @@ def cubeSpaceX():
     assert(SX_cube[66, 3, 4] == SX_data[66, 46])
 
     return SX_cube
+
+def SpaceX():
+    [_, SX_subjects, _, SX_unique_rec_names, SX_unique_ant_names] = importSpaceX()
+    return Bunch(
+        tensor = cubeSpaceX(),
+        axes = [SX_subjects, SX_unique_rec_names, SX_unique_ant_names]
+    )
 
 
 def flattenSpaceX():
@@ -169,3 +177,12 @@ def flattenMGH():
     assert(MGH_flatCube[4, 5202] == MGH_cube[578, 4, 0])
 
     return MGH_flatCube, MGH_subxant_names, MGH_unique_rec_names
+
+def MGH():
+    MGH_cube, function_data = cubeMGH()
+    _, MGH_subjects, _, MGH_unique_rec_names, MGH_unique_ant_names = importMGH()
+    return Bunch(
+        tensor = MGH_cube,
+        axes = [MGH_subjects, MGH_unique_rec_names, MGH_unique_ant_names],
+        functions = function_data
+    )
