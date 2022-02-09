@@ -1,12 +1,14 @@
 """Import Zohar data, tensor formation, plotting raw data."""
+from os.path import join, dirname
 import numpy as np
 import pandas as pd
 from .__init__ import Bunch
 
+path_here = dirname(dirname(__file__))
 
 def pbsSubtractOriginal():
     """ Paper Background subtract, will keep all rows for any confusing result. """
-    Cov = pd.read_csv("tensordata/zohar2020/ZoharCovData.csv", index_col=0)
+    Cov = pd.read_csv(join(path_here, "tensordata/zohar2020/ZoharCovData.csv"), index_col=0)
     # 23 (0-> 23) is the start of IgG1_S
     Demographics = Cov.iloc[:, 0:23]
     Serology = Cov.iloc[:, 23::]
