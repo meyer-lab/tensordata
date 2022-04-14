@@ -183,6 +183,7 @@ def MGH():
     _, MGH_subjects, _, MGH_unique_rec_names, MGH_unique_ant_names = importMGH()
     return Bunch(
         tensor = MGH_cube,
+        mode=["Sample", "Receptor", "Antigen"],
         axes = [MGH_subjects, MGH_unique_rec_names, MGH_unique_ant_names],
         functions = function_data
     )

@@ -181,5 +181,6 @@ def data():
     return Bunch(
         tensor=cube,
         matrix=glyCube,
+        mode=["Sample", "Receptor", "Antigen", "Glycan"],
         axes=[subjects, detections, antigen, glycan],
     )
