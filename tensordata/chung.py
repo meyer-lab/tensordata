@@ -13,16 +13,9 @@ def load_file(name):
     return data
 
 
-def importName():
-    data = load_file("csv filename")
-    
-    #if data is array 
-    xda = xa.DataArray(data, dims=["Samples", "Measurement"], coords=[sampIDX, indexx])
-    xda = xda.unstack()
-    return xda, [list(x) for x in xda.coords.values()]
-   
-    #if data is dataframe 
-    xdf = df.to_xarray()
+def importFig1():
+    data = load_file("fig1")
+    xdf = data.to_xarray()
     return xdf.to_array()
 
 
