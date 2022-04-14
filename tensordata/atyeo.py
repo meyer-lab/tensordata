@@ -81,5 +81,6 @@ def data():
     subject, receptor, antigen = getAxes()
     return Bunch(
         tensor=createCube(),
+        mode=["Sample", "Receptor", "Antigen"],
         axes=[subject, receptor, antigen],
     )
