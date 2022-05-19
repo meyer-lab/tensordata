@@ -1,6 +1,7 @@
 """Import Zohar data, tensor formation, plotting raw data."""
 from os.path import join, dirname
 import numpy as np
+import xarray as xr
 import pandas as pd
 from .__init__ import Bunch
 
@@ -80,6 +81,29 @@ def Tensor4D():
 
     return tensor, np.array(df.index)
 
+def Tensor3D():
+    """ Create a 3D Tensor (Antigen, Receptor, Sample in time) """
+    df = pbsSubtractOriginal()
+    Rlabels, AgLabels = dimensionLabel3D()
+
+    tensor = np.full((len(df), len(AgLabels), len(Rlabels)), np.nan)
+    missing = 0
+
+    for rii, recp in enumerate(Rlabels):
+        for aii, anti in enumerate(AgLabels):
+            try:
+                dfAR = df[recp + "_" + anti]
+                tensor[:, aii, rii] = dfAR.values
+            except KeyError:
+                missing += 1
+
+    tensor = np.clip(tensor, 10.0, None)
+    tensor = np.log10(tensor)
+
+    # Mean center each measurement
+    tensor -= np.nanmean(tensor, axis=0)
+
+    return tensor, np.array(df.index)
 
 def dimensionLabel3D():
     """Returns labels for receptor and antigens, included in the 4D tensor"""
@@ -116,14 +140,33 @@ def time_components_df(tfac, condition=None):
     return df
 
 
-def data():
+def data(xarray = False):
     df = pbsSubtractOriginal()
     subjects = np.unique(df['patient_ID'])
     tensor, _ = Tensor4D()
     receptorLabel, antigenLabel = dimensionLabel3D()
     days = dayLabels()
 
+    if xarray:
+        return xr.DataArray(tensor, dims=("Subject", "Antigen", "Receptor", "Days"),
+                            coords={"Subject":subjects, "Antigen":antigenLabel, "Receptor":receptorLabel, "Days":days})
+
     return Bunch(
         tensor=tensor,
+        mode=["Subject", "Antigen", "Receptor", "Days"],
         axes=[subjects, antigenLabel, receptorLabel, days],
+    )
+
+def data3D(xarray = False):
+    tensor, samples = Tensor3D()
+    receptorLabel, antigenLabel = dimensionLabel3D()
+
+    if xarray:
+        return xr.DataArray(tensor, dims=("Sample", "Antigen", "Receptor"),
+                            coords={"Sample":samples, "Antigen":antigenLabel, "Receptor":receptorLabel})
+
+    return Bunch(
+        tensor=tensor,
+        mode=["Sample", "Antigen", "Receptor"],
+        axes=[samples, antigenLabel, receptorLabel],
     )

@@ -1,5 +1,6 @@
 from os.path import join, dirname
 import numpy as np
+import xarray as xr
 import pandas as pd
 from .__init__ import Bunch
 
@@ -62,8 +63,11 @@ def cubeSpaceX():
 
     return SX_cube
 
-def SpaceX():
+def SpaceX(xarray = False):
     [_, SX_subjects, _, SX_unique_rec_names, SX_unique_ant_names] = importSpaceX()
+    if xarray:
+        return xr.DataArray(cubeSpaceX(), dims=("Sample", "Receptor", "Antigen"),
+                            coords={"Sample":SX_subjects, "Receptor":SX_unique_rec_names, "Antigen":SX_unique_ant_names})
     return Bunch(
         tensor = cubeSpaceX(),
         axes = [SX_subjects, SX_unique_rec_names, SX_unique_ant_names]
@@ -101,12 +105,12 @@ def flattenSpaceX():
 
 def importMGH():
     data = load_file("MGH_Sero.Neut.WHO124.log10")
-    MGH_subjects = data.values[:, 0]
-    MGH_data = data.values[:, 1:]
+    MGH_subjects = data.values[:, 0].astype('str')
+    MGH_data = data.values[:, 1:].astype('float64')
 
     ant_rec_names = load_file("MGH_Features")
-    ant_names = ant_rec_names.values[:, 0]
-    MGH_rec_names = ant_rec_names.values[:, 1]
+    ant_names = ant_rec_names.values[:, 0].astype('str')
+    MGH_rec_names = ant_rec_names.values[:, 1].astype('str')
 
     _, unique_rec_ind = np.unique(MGH_rec_names, return_index=True)
     MGH_unique_rec_names = MGH_rec_names[sorted(unique_rec_ind)]
@@ -178,11 +182,33 @@ def flattenMGH():
 
     return MGH_flatCube, MGH_subxant_names, MGH_unique_rec_names
 
-def MGH():
+def MGH(xarray = False):
     MGH_cube, function_data = cubeMGH()
     _, MGH_subjects, _, MGH_unique_rec_names, MGH_unique_ant_names = importMGH()
+    if xarray:
+        dat = xr.DataArray(MGH_cube, dims=("Sample", "Receptor", "Antigen"),
+                            coords={"Sample":MGH_subjects, "Receptor":MGH_unique_rec_names, "Antigen":MGH_unique_ant_names})
+        dat.attrs["functions"] = function_data
+        return dat
     return Bunch(
         tensor = MGH_cube,
+        mode=["Sample", "Receptor", "Antigen"],
         axes = [MGH_subjects, MGH_unique_rec_names, MGH_unique_ant_names],
         functions = function_data
     )
+
+def MGH4D(xarray = False):
+    cube, function_data = cubeMGH()
+    _, sampleax, _, recs, Ags = importMGH()
+
+    subjax = [s.split('_')[0] for s in sampleax]
+    dayax = [s.split('_')[1] for s in sampleax]
+    subju = np.unique(subjax)
+    dayu = np.unique(dayax)
+
+    cube4d = np.full((len(subju), len(dayu), cube.shape[1], cube.shape[2]), np.nan)
+    for ii in range(len(sampleax)):
+        cube4d[np.where(subju == subjax[ii])[0][0], np.where(dayu == dayax[ii])[0][0], :, :] = cube[ii, :, :]
+
+    return xr.DataArray(cube4d, dims=("Subject", "Day", "Receptor", "Antigen"),
+                       coords={"Subject": subju, "Day": dayu, "Receptor": recs, "Antigen": Ags})
