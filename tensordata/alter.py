@@ -3,6 +3,7 @@ from functools import reduce
 from functools import lru_cache
 from os.path import join, dirname
 import numpy as np
+import xarray as xr
 import pandas as pd
 from .__init__ import Bunch
 
@@ -174,10 +175,17 @@ def createCube():
 
     return cube, glyCube
 
-def data():
+def data(xarray = False):
     cube, glyCube = createCube()
     subjects, detections, antigen = getAxes()
     glycan, _ = importGlycan()
+
+    if xarray:
+        return [xr.DataArray(cube, dims=("Sample", "Receptor", "Antigen"),
+                            coords={"Sample": subjects, "Receptor": detections, "Antigen": antigen}),
+                xr.DataArray(glyCube, dims=("Sample", "Glycan"),
+                             coords={"Sample": subjects, "Glycan": glycan})]
+
     return Bunch(
         tensor=cube,
         matrix=glyCube,

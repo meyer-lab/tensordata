@@ -1,5 +1,6 @@
 from os.path import join, dirname
 import numpy as np
+import xarray as xr
 import pandas as pd
 from .__init__ import Bunch
 
@@ -77,8 +78,11 @@ def flattenCube():
     return flatCube
 
 
-def data():
+def data(xarray = False):
     subject, receptor, antigen = getAxes()
+    if xarray:
+        return xr.DataArray(createCube(), dims=("Sample", "Receptor", "Antigen"),
+                            coords={"Sample":subject, "Receptor":receptor, "Antigen":antigen})
     return Bunch(
         tensor=createCube(),
         mode=["Sample", "Receptor", "Antigen"],

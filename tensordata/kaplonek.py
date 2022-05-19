@@ -1,5 +1,6 @@
 from os.path import join, dirname
 import numpy as np
+import xarray as xr
 import pandas as pd
 from .__init__ import Bunch
 
@@ -62,8 +63,11 @@ def cubeSpaceX():
 
     return SX_cube
 
-def SpaceX():
+def SpaceX(xarray = False):
     [_, SX_subjects, _, SX_unique_rec_names, SX_unique_ant_names] = importSpaceX()
+    if xarray:
+        return xr.DataArray(cubeSpaceX(), dims=("Sample", "Receptor", "Antigen"),
+                            coords={"Sample":SX_subjects, "Receptor":SX_unique_rec_names, "Antigen":SX_unique_ant_names})
     return Bunch(
         tensor = cubeSpaceX(),
         axes = [SX_subjects, SX_unique_rec_names, SX_unique_ant_names]
@@ -178,9 +182,14 @@ def flattenMGH():
 
     return MGH_flatCube, MGH_subxant_names, MGH_unique_rec_names
 
-def MGH():
+def MGH(xarray = False):
     MGH_cube, function_data = cubeMGH()
     _, MGH_subjects, _, MGH_unique_rec_names, MGH_unique_ant_names = importMGH()
+    if xarray:
+        dat = xr.DataArray(MGH_cube, dims=("Sample", "Receptor", "Antigen"),
+                            coords={"Sample":MGH_subjects, "Receptor":MGH_unique_rec_names, "Antigen":MGH_unique_ant_names})
+        dat.attrs["functions"] = function_data
+        return dat
     return Bunch(
         tensor = MGH_cube,
         mode=["Sample", "Receptor", "Antigen"],
