@@ -1,6 +1,7 @@
 """Import Zohar data, tensor formation, plotting raw data."""
 from os.path import join, dirname
 import numpy as np
+import xarray as xr
 import pandas as pd
 from .__init__ import Bunch
 
@@ -139,12 +140,16 @@ def time_components_df(tfac, condition=None):
     return df
 
 
-def data():
+def data(xarray = False):
     df = pbsSubtractOriginal()
     subjects = np.unique(df['patient_ID'])
     tensor, _ = Tensor4D()
     receptorLabel, antigenLabel = dimensionLabel3D()
     days = dayLabels()
+
+    if xarray:
+        return xr.DataArray(tensor, dims=("Subject", "Antigen", "Receptor", "Days"),
+                            coords={"Subject":subjects, "Antigen":antigenLabel, "Receptor":receptorLabel, "Days":days})
 
     return Bunch(
         tensor=tensor,
@@ -152,9 +157,13 @@ def data():
         axes=[subjects, antigenLabel, receptorLabel, days],
     )
 
-def data3D():
+def data3D(xarray = False):
     tensor, samples = Tensor3D()
     receptorLabel, antigenLabel = dimensionLabel3D()
+
+    if xarray:
+        return xr.DataArray(tensor, dims=("Sample", "Antigen", "Receptor"),
+                            coords={"Sample":samples, "Antigen":antigenLabel, "Receptor":receptorLabel})
 
     return Bunch(
         tensor=tensor,
