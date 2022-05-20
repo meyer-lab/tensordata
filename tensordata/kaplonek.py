@@ -121,6 +121,32 @@ def importMGH():
     return MGH_data, MGH_subjects, MGH_rec_names, MGH_unique_rec_names, MGH_unique_ant_names
 
 
+def MGHds():
+    """ MGH import to a xr.Dataset, Will be the only one to keep for MGH """
+    data = load_file("MGH_Sero.Neut.WHO124.log10")
+    sample_ax = data.values[:, 0].astype('str')
+    meas_ax = data.columns[1:-4]
+    func_feats = data.columns[-4:]
+
+    subj_ax = [s.split('_')[0] for s in sample_ax]
+    day_ax = [s.split('_')[1] for s in sample_ax]
+
+    meta = load_file("MGH_Features")
+    Ag_ax = meta.values[:, 0].astype('str')
+    rcp_ax = meta.values[:, 1].astype('str')
+
+    fc = xr.DataArray(coords = [("Subject", np.unique(subj_ax)), ("Day", np.unique(day_ax)), ("Antigen", np.unique(Ag_ax)), ("Receptor", np.unique(rcp_ax))])
+    for ii, samp in enumerate(sample_ax):
+        for jj, meas in enumerate(meas_ax):
+            fc.loc[samp.split('_')[0], samp.split('_')[1], Ag_ax[jj], rcp_ax[jj]] = data.loc[ii, meas]
+
+    funcdat = xr.DataArray(coords = [("Subject", np.unique(subj_ax)), ("Day", np.unique(day_ax)), ("Feature", func_feats)])
+    for ii, samp in enumerate(sample_ax):
+        for ffeat in func_feats:
+            funcdat.loc[samp.split('_')[0], samp.split('_')[1], ffeat] = data.loc[ii, ffeat]
+    return xr.Dataset({"Fc": fc, "functional": funcdat})
+
+
 def cubeMGH():
     [MGH_data, MGH_subjects, MGH_rec_names, MGH_unique_rec_names, MGH_unique_ant_names] = importMGH()
 

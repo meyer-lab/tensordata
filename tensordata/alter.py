@@ -181,10 +181,13 @@ def data(xarray = False):
     glycan, _ = importGlycan()
 
     if xarray:
-        return [xr.DataArray(cube, dims=("Sample", "Receptor", "Antigen"),
-                            coords={"Sample": subjects, "Receptor": detections, "Antigen": antigen}),
-                xr.DataArray(glyCube, dims=("Sample", "Glycan"),
-                             coords={"Sample": subjects, "Glycan": glycan})]
+        return xr.Dataset(
+            {
+                "Fc": (["Sample", "Receptor", "Antigen"], cube),
+                "gp120": (["Sample", "Glycan"], glyCube),
+            },
+            coords = {"Sample": subjects, "Receptor": detections, "Antigen": antigen, "Glycan": glycan},
+        )
 
     return Bunch(
         tensor=cube,
