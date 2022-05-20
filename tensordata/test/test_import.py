@@ -18,9 +18,9 @@ def test_alter():
     assert d.tensor.shape[0] == d.matrix.shape[0]
     assert d.matrix.shape[1] ==  len(d.axes[3])
 
-    dxs = data(xarray=True)
-    assert len(dxs[0].sel(Receptor='IgG3').shape) == 2
-    assert len(dxs[1].sel(Glycan='G2F').shape) == 1
+    ds = data(xarray=True)
+    assert "Fc" in ds
+    assert "gp120" in ds
 
 def test_zohar():
     from ..zohar import data, data3D
@@ -41,7 +41,7 @@ def test_zohar():
     assert len(dx3.sel(Antigen='RBD').shape) == 2
 
 def test_kaplonek():
-    from ..kaplonek import SpaceX, MGH
+    from ..kaplonek import SpaceX, MGH, MGHds
     s = SpaceX()
     shp = s.tensor.shape
     for ii in range(3):
@@ -53,5 +53,5 @@ def test_kaplonek():
     mhp = m.tensor.shape
     for ii in range(3):
         assert mhp[ii] == len(m.axes[ii])
-    mx = MGH(xarray=True)
-    assert len(mx.sel(Antigen='CMV').shape) == 2
+    ds = MGHds()
+    assert len(ds["Fc"].sel(Antigen='CMV').shape) == 3
