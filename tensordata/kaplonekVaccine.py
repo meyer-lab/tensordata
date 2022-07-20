@@ -8,39 +8,44 @@ path_here = dirname(dirname(__file__))
 
 def load_file(name):
     """ Return a requested data file. """
-    data = pd.read_csv(join(path_here, "tensordata/chung2021/" + name + ".csv"), delimiter=",", comment="#")
+    data = pd.read_csv(join(path_here, "tensordata/kaplonekVaccine2022/" + name + ".csv"), delimiter=",", comment="#")
 
     return data
 
 
 def importData():
-    data = load_file("fig6")
-    subjects = data.values[:, 0].astype('str')
-    values = data.values[:, 5:].astype('float64')
+    data = load_file("Luminex-functional-assay")
+    subjects = data.values[:, 1].astype('str')
+    values = data.values[:, 15:].astype('float64')
+    names = data.columns.values[15:].astype('str')
 
-    names = load_file("fig1")
-    rec_names = names.columns.values[12:].astype('str')
-    length = len(rec_names)
-    unique_rec_names = rec_names[0:length:16]
+    rec_names = []
+    ant_names = []
+    for str in names:
+        split = str.split('_')
+        rec_names.append(split[0])
+        ant_names.append(split[1])
+
+    unique_rec_names = [i for n, i in enumerate(rec_names) if i not in rec_names[:n]]
+    unique_rec_names = np.array(unique_rec_names)
+    rec_names = np.array(rec_names)
     
-    ant_names = names.values[0,12:].astype('str')
-    for ii, str in enumerate(ant_names):
-        ant_names[ii] = str.replace("\r\n", "")
-    unique_ant_names = ant_names[:16]
+    unique_ant_names = [i for n, i in enumerate(ant_names) if i not in ant_names[:n]]
+    unique_ant_names = np.array(unique_ant_names)
+    ant_names = np.array(ant_names)
 
     return  values, subjects, rec_names, unique_rec_names, ant_names, unique_ant_names
 
 
 def makeCube():
-    data, _, rec_names, unique_rec_names, ant_names, unique_ant_names = importData()
+    data, _, rec_names, unique_rec_names, _, unique_ant_names = importData()
 
     rec_ind = np.zeros((unique_rec_names.size, int(rec_names.size / unique_rec_names.size))).astype(int)
 
     for ii in range(unique_rec_names.size):
         rec_index = np.where(rec_names == unique_rec_names[ii])
         rec_index = np.array(rec_index)
-        for jj in range(unique_ant_names.size):
-            rec_ind[ii, jj] = rec_index + jj
+        rec_ind[ii, :] = rec_index 
 
     cube = np.zeros((data[:, 0].size, unique_rec_names.size, rec_ind[0, :].size))
 
@@ -55,6 +60,7 @@ def makeCube():
 
     return cube
 
+
 def data(xarray = False):
     cube = makeCube()
     _, subjects, _, unique_rec_names, _, unique_ant_names = importData()
@@ -67,9 +73,4 @@ def data(xarray = False):
         mode=["Sample", "Receptor", "Antigen"],
         axes = [subjects, unique_rec_names, unique_ant_names],
     )
-
-
-
-    
-
 
