@@ -38,7 +38,7 @@ def importData():
 
 
 def makeCube():
-    data, _, rec_names, unique_rec_names, _, unique_ant_names = importData()
+    data, _, rec_names, unique_rec_names, _, _ = importData()
 
     rec_ind = np.zeros((unique_rec_names.size, int(rec_names.size / unique_rec_names.size))).astype(int)
 
