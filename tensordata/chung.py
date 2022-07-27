@@ -58,6 +58,7 @@ def makeCube():
 def data(xarray = False):
     cube = makeCube()
     _, subjects, _, unique_rec_names, _, unique_ant_names = importData()
+    unique_ant_names = [s.replace("\n", "") for s in unique_ant_names]
     if xarray:
         dat = xr.DataArray(cube, dims=("Sample", "Receptor", "Antigen"),
                             coords={"Sample":subjects, "Receptor":unique_rec_names, "Antigen":unique_ant_names})

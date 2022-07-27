@@ -21,3 +21,13 @@ class Bunch(dict):
 
     def __setstate__(self, state):
         pass
+
+
+def xr_to_bunch(data):
+    import xarray as xr
+    assert isinstance(data, xr.DataArray)
+    return Bunch(
+        tensor = data.to_numpy(),
+        mode = list(data.coords.dims),
+        axes = [data.coords[dim].values for dim in data.coords.dims],
+    )
