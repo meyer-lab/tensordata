@@ -157,16 +157,10 @@ def data(xarray = False):
         axes=[subjects, antigenLabel, receptorLabel, days],
     )
 
-def data3D(xarray = False):
+def data3D():
     tensor, samples = Tensor3D()
     receptorLabel, antigenLabel = dimensionLabel3D()
 
-    if xarray:
-        return xr.DataArray(tensor, dims=("Sample", "Antigen", "Receptor"),
-                            coords={"Sample":samples, "Antigen":antigenLabel, "Receptor":receptorLabel})
+    return xr.DataArray(tensor, dims=("Sample", "Antigen", "Receptor"),
+                        coords={"Sample":samples, "Antigen":antigenLabel, "Receptor":receptorLabel})
 
-    return Bunch(
-        tensor=tensor,
-        mode=["Sample", "Antigen", "Receptor"],
-        axes=[samples, antigenLabel, receptorLabel],
-    )

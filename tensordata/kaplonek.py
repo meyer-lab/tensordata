@@ -63,15 +63,13 @@ def cubeSpaceX():
 
     return SX_cube
 
-def SpaceX(xarray = False):
+def SpaceX():
     [_, SX_subjects, _, SX_unique_rec_names, SX_unique_ant_names] = importSpaceX()
-    if xarray:
-        return xr.DataArray(cubeSpaceX(), dims=("Sample", "Receptor", "Antigen"),
+    
+    return xr.DataArray(cubeSpaceX(), dims=("Sample", "Receptor", "Antigen"),
                             coords={"Sample":SX_subjects, "Receptor":SX_unique_rec_names, "Antigen":SX_unique_ant_names})
-    return Bunch(
-        tensor = cubeSpaceX(),
-        axes = [SX_subjects, SX_unique_rec_names, SX_unique_ant_names]
-    )
+    
+
 
 
 def SpaceX4D():
@@ -240,22 +238,17 @@ def flattenMGH():
 
     return MGH_flatCube, MGH_subxant_names, MGH_unique_rec_names
 
-def MGH(xarray = False):
+def MGH():
     MGH_cube, function_data = cubeMGH()
     _, MGH_subjects, _, MGH_unique_rec_names, MGH_unique_ant_names = importMGH()
-    if xarray:
-        dat = xr.DataArray(MGH_cube, dims=("Sample", "Receptor", "Antigen"),
-                            coords={"Sample":MGH_subjects, "Receptor":MGH_unique_rec_names, "Antigen":MGH_unique_ant_names})
-        dat.attrs["functions"] = function_data
-        return dat
-    return Bunch(
-        tensor = MGH_cube,
-        mode=["Sample", "Receptor", "Antigen"],
-        axes = [MGH_subjects, MGH_unique_rec_names, MGH_unique_ant_names],
-        functions = function_data
-    )
+    
+    dat = xr.DataArray(MGH_cube, dims=("Sample", "Receptor", "Antigen"),
+                        coords={"Sample":MGH_subjects, "Receptor":MGH_unique_rec_names, "Antigen":MGH_unique_ant_names})
+    dat.attrs["functions"] = function_data
+    return dat
+    
 
-def MGH4D(xarray = False):
+def MGH4D():
     cube, function_data = cubeMGH()
     _, sampleax, _, recs, Ags = importMGH()
 
