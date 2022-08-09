@@ -80,11 +80,6 @@ def flattenCube():
 
 def data(xarray = False):
     subject, receptor, antigen = getAxes()
-    if xarray:
-        return xr.DataArray(createCube(), dims=("Sample", "Receptor", "Antigen"),
-                            coords={"Sample":subject, "Receptor":receptor, "Antigen":antigen})
-    return Bunch(
-        tensor=createCube(),
-        mode=["Sample", "Receptor", "Antigen"],
-        axes=[subject, receptor, antigen],
-    )
+    
+    return xr.DataArray(createCube(), dims=("Sample", "Receptor", "Antigen"),
+                        coords={"Sample":subject, "Receptor":receptor, "Antigen":antigen})

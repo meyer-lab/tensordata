@@ -147,20 +147,25 @@ def data(xarray = False):
     receptorLabel, antigenLabel = dimensionLabel3D()
     days = dayLabels()
 
-    if xarray:
-        return xr.DataArray(tensor, dims=("Subject", "Antigen", "Receptor", "Days"),
-                            coords={"Subject":subjects, "Antigen":antigenLabel, "Receptor":receptorLabel, "Days":days})
+    return xr.DataArray(tensor, dims=("Subject", "Antigen", "Receptor", "Days"),
+                        coords={"Subject":subjects, "Antigen":antigenLabel, "Receptor":receptorLabel, "Days":days})
 
-    return Bunch(
-        tensor=tensor,
-        mode=["Subject", "Antigen", "Receptor", "Days"],
-        axes=[subjects, antigenLabel, receptorLabel, days],
-    )
 
-def data3D():
+def data3D(xarray = False):
     tensor, samples = Tensor3D()
     receptorLabel, antigenLabel = dimensionLabel3D()
 
-    return xr.DataArray(tensor, dims=("Sample", "Antigen", "Receptor"),
+    xdata = xr.DataArray(tensor, dims=("Sample", "Antigen", "Receptor"),
                         coords={"Sample":samples, "Antigen":antigenLabel, "Receptor":receptorLabel})
+    
+    xdata = serology_rename(xdata)
+    
+    return xdata
 
+
+def serology_rename(xdata):
+
+    Z_dict = {'Antigen': ['SARS.CoV2_S', 'SARS.CoV2_RBD', 'SARS.CoV2_N', 'SARS.CoV2_S1','SARS.CoV2_S2', 
+                            'SARS.CoV2_S1trimer']}
+
+    return xdata.assign_coords(Z_dict)

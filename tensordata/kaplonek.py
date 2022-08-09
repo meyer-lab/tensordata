@@ -63,7 +63,7 @@ def cubeSpaceX():
 
     return SX_cube
 
-def SpaceX():
+def SpaceX(xarray = False):
     [_, SX_subjects, _, SX_unique_rec_names, SX_unique_ant_names] = importSpaceX()
     
     return xr.DataArray(cubeSpaceX(), dims=("Sample", "Receptor", "Antigen"),
@@ -72,7 +72,7 @@ def SpaceX():
 
 
 
-def SpaceX4D():
+def SpaceX4D(xarray = False):
     data = load_file("SpaceX_Sero.Data")
     meta = load_file("SpaceX_meta.data")
     data = pd.concat([data, meta], join='outer', axis=1)
@@ -238,7 +238,7 @@ def flattenMGH():
 
     return MGH_flatCube, MGH_subxant_names, MGH_unique_rec_names
 
-def MGH():
+def MGH(xarray = False):
     MGH_cube, function_data = cubeMGH()
     _, MGH_subjects, _, MGH_unique_rec_names, MGH_unique_ant_names = importMGH()
     
@@ -248,7 +248,7 @@ def MGH():
     return dat
     
 
-def MGH4D():
+def MGH4D(xarray = False):
     cube, function_data = cubeMGH()
     _, sampleax, _, recs, Ags = importMGH()
 
@@ -263,3 +263,17 @@ def MGH4D():
 
     return xr.DataArray(cube4d, dims=("Subject", "Day", "Receptor", "Antigen"),
                        coords={"Subject": subju, "Day": dayu, "Receptor": recs, "Antigen": Ags})
+
+
+def serology_rename():
+    M, S = MGH4D(), SpaceX4D()
+    
+    M_dict = {'Antigen': ['SARS.CoV2_N', 'CoV.OC43', 'Flu_HA', 'SARS.CoV2_S1', 'Ebola_gp', 'CMV',
+                                        'SARS.CoV2_S', 'SARS.CoV2_S2', 'SARS.CoV2_RBD']}
+
+    S_dict = {'Antigen': ['CoV.HKU1_S', 'CoV.OC43_RBD', 'CoV.HKU1_RBD', 'CoV.OC43_S', 'SARS.CoV2_S',
+                            'SARS.CoV2_S1', 'SARS.CoV2_RBD', 'SARS_RBD', 'SARS.CoV2_S2', 'Flu_HA',
+                            'Ebola_gp', 'MERS_RBD', 'SARS_S', 'MERS_S']}
+
+
+    return M.assign_coords(M_dict), S.assign_coords(S_dict)
