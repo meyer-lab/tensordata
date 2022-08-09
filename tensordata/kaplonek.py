@@ -74,6 +74,38 @@ def SpaceX(xarray = False):
     )
 
 
+def SpaceX4D():
+    data = load_file("SpaceX_Sero.Data")
+    meta = load_file("SpaceX_meta.data")
+    data = pd.concat([data, meta], join='outer', axis=1)
+
+    params = data.iloc[:, 1:85].columns
+    antigens = pd.unique([s.split("-")[0] for s in params])
+    antibodies = pd.unique([s.split("-")[1] for s in params])
+    patients = pd.unique(data.loc[:, "Pat.ID"])
+    days = pd.unique(data.loc[:, "time.point"])
+
+    xdata = xr.DataArray(
+        coords = {
+            "Subject": patients,
+            "Antigen": antigens,
+            "Receptor": antibodies,
+            "Time": days,
+        },
+        dims=("Subject", "Antigen", "Receptor", "Time")
+    )
+
+    for index, row in data.iterrows():
+        for param in row.index[1:85]:
+            Ag, Ab = param.split("-")
+            xdata.loc[{"Subject": row["Pat.ID"],
+                       "Time": row["time.point"],
+                       "Antigen": Ag,
+                       "Receptor": Ab}] = data.loc[index, param]
+
+    return xdata
+
+
 def flattenSpaceX():
 
     _, SX_subjects, _, SX_unique_rec_names, SX_unique_ant_names = importSpaceX()
