@@ -158,12 +158,12 @@ def data3D(xarray = False):
     xdata = xr.DataArray(tensor, dims=("Sample", "Antigen", "Receptor"),
                         coords={"Sample":samples, "Antigen":antigenLabel, "Receptor":receptorLabel})
     
-    xdata = serology_rename(xdata)
+    xdata = zo_serology_rename(xdata)
     
     return xdata
 
 
-def serology_rename(xdata):
+def zo_serology_rename(xdata):
 
     Z_dict = {'Antigen': ['SARS.CoV2_S', 'SARS.CoV2_RBD', 'SARS.CoV2_N', 'SARS.CoV2_S1','SARS.CoV2_S2', 
                             'SARS.CoV2_S1trimer']}
