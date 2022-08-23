@@ -2,7 +2,6 @@ from os.path import join, dirname
 import numpy as np
 import pandas as pd
 import xarray as xr
-from .__init__ import Bunch
 
 path_here = dirname(dirname(__file__))
 
@@ -64,13 +63,8 @@ def makeCube():
 def data(xarray = False):
     cube = makeCube()
     _, subjects, _, unique_rec_names, _, unique_ant_names = importData()
-    if xarray:
-        dat = xr.DataArray(cube, dims=("Sample", "Receptor", "Antigen"),
-                            coords={"Sample":subjects, "Receptor":unique_rec_names, "Antigen":unique_ant_names})
-        return dat
-    return Bunch(
-        tensor = cube,
-        mode=["Sample", "Receptor", "Antigen"],
-        axes = [subjects, unique_rec_names, unique_ant_names],
-    )
+
+    dat = xr.DataArray(cube, dims=("Sample", "Receptor", "Antigen"),
+                        coords={"Sample":subjects, "Receptor":unique_rec_names, "Antigen":unique_ant_names})
+    return dat
 

@@ -3,7 +3,6 @@ from os.path import join, dirname
 import numpy as np
 import xarray as xr
 import pandas as pd
-from .__init__ import Bunch
 
 path_here = dirname(dirname(__file__))
 
