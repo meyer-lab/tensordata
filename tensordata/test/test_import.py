@@ -55,3 +55,10 @@ def test_kaplonek():
         assert mhp[ii] == len(m.axes[ii])
     ds = MGHds()
     assert len(ds["Fc"].sel(Antigen='CMV').shape) == 3
+
+def test_jones():
+    from ..jones import process_RA_Tensor, make_RA_Tensor
+    process_RA_Tensor()
+    RA_xa = make_RA_Tensor()
+    print(RA_xa.shape)
+    assert len(RA_xa.data.shape) == 4
