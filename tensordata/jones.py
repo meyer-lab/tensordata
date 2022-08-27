@@ -71,9 +71,6 @@ def process_RA_Tensor():
 
 def make_RA_Tensor():
     """Processes RA DataFrame into Xarray Tensor"""
-    if exists("tensordata/jones2017/RA Tensor DataSet.nc"):
-        return xr.open_dataarray("tensordata/jones2017/RA Tensor DataSet.nc")
-
     if exists("tensordata/jones2017/RA_DataFrame.csv"):
         RA_df = pd.read_csv("tensordata/jones2017/RA_DataFrame.csv")
     else:
@@ -104,5 +101,4 @@ def make_RA_Tensor():
                              dims=("Stimulant", "Inhibitor", "Cytokine", "Donor"),
                              coords={"Stimulant": stimulants, "Inhibitor": inhibitors,
                                      "Cytokine": cytokines, "Donor": donors})
-    RA_xarray.to_netcdf("tensordata/jones2017/RA Tensor DataSet.nc")
     return RA_xarray
