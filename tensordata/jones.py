@@ -1,7 +1,8 @@
 from os.path import join, dirname
 import numpy as np
 import pandas as pd
-import xarray as xa
+import xarray as xr
+from os.path import exists
 
 path_here = dirname(dirname(__file__))
 
@@ -64,13 +65,20 @@ def process_RA_Tensor():
 
     # Average Over Replicates
     RA_df = RA_df.groupby(["Stimulant", "Inhibitor", "Donor", "Status", "Cytokine"])["Log MFI"].mean().reset_index()
-    RA_df.to_csv("RA_DataFrame.csv")
+    RA_df.to_csv("tensordata/jones2017/RA_DataFrame.csv")
     return RA_df
 
 
 def make_RA_Tensor():
     """Processes RA DataFrame into Xarray Tensor"""
-    RA_df = pd.read_csv("RA_DataFrame.csv")
+    if exists("tensordata/jones2017/RA Tensor DataSet.nc"):
+        return xr.open_dataarray("tensordata/jones2017/RA Tensor DataSet.nc")
+
+    if exists("tensordata/jones2017/RA_DataFrame.csv"):
+        RA_df = pd.read_csv("tensordata/jones2017/RA_DataFrame.csv")
+    else:
+        RA_df = process_RA_Tensor()
+
     stimulants = RA_df.Stimulant.unique()
     inhibitors = RA_df.Inhibitor.unique()
     cytokines = RA_df.Cytokine.unique()
@@ -83,12 +91,18 @@ def make_RA_Tensor():
             for k, cyto in enumerate(cytokines):
                 for ii, donor in enumerate(donors):
                     if stim != inh:
-                        entry = RA_df.loc[(RA_df.Stimulant == stim) & (RA_df.Inhibitor == inh) & (RA_df.Cytokine == cyto) & (RA_df.Donor == donor)]["Log MFI"].values
+                        entry = RA_df.loc[(RA_df.Stimulant == stim) &
+                                          (RA_df.Inhibitor == inh) &
+                                          (RA_df.Cytokine == cyto) &
+                                          (RA_df.Donor == donor)]["Log MFI"].values
                         tensor[i, j, k, ii] = np.mean(entry)
     # Normalize
     for i, _ in enumerate(cytokines):
         tensor[:, :, i, :][~np.isnan(tensor[:, :, i, :])] /= np.nanmax(tensor[:, :, i, :])
 
-    RA_xarray = xa.DataArray(tensor, dims=("Stimulant", "Inhibitor", "Cytokine", "Donor"), coords={"Stimulant": stimulants, "Inhibitor": inhibitors, "Cytokine": cytokines, "Donor": donors})
-    RA_xarray.to_netcdf("RA Tensor DataSet.nc")
-    return tensor
+    RA_xarray = xr.DataArray(tensor,
+                             dims=("Stimulant", "Inhibitor", "Cytokine", "Donor"),
+                             coords={"Stimulant": stimulants, "Inhibitor": inhibitors,
+                                     "Cytokine": cytokines, "Donor": donors})
+    RA_xarray.to_netcdf("tensordata/jones2017/RA Tensor DataSet.nc")
+    return RA_xarray

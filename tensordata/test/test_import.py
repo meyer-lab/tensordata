@@ -61,4 +61,4 @@ def test_jones():
     process_RA_Tensor()
     RA_xa = make_RA_Tensor()
     print(RA_xa.shape)
-    assert len(RA_xa.data.shape) == 4
+    assert len(RA_xa.shape) == 4
