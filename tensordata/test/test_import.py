@@ -62,3 +62,10 @@ def test_jones():
     RA_xa = make_RA_Tensor()
     print(RA_xa.shape)
     assert len(RA_xa.shape) == 4
+
+def test_serology():
+    from ..serology import concat4D
+    dat = concat4D()
+    assert len(dat["MGH"].shape) == 4
+    assert len(dat["SpaceX"].shape) == 4
+    assert np.all(dat["MGH"]["Receptor"] == dat["Zohar"]["Receptor"])
