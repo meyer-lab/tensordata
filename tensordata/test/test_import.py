@@ -68,4 +68,4 @@ def test_serology():
     dat = concat4D()
     assert len(dat["MGH"].shape) == 4
     assert len(dat["SpaceX"].shape) == 4
-    assert np.all(dat["MGH"]["Receptor"] == dat["Zohar"]["Receptor"])
+    assert all(dat["MGH"]["Receptor"] == dat["Zohar"]["Receptor"])
