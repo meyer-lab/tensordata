@@ -23,7 +23,7 @@ def test_alter():
     assert "gp120" in ds
 
 def test_zohar():
-    from ..zohar import data, data3D
+    from ..zohar import data, data3D as Zohar
     d = data()
     shp = d.tensor.shape
     for ii in range(4):
@@ -32,12 +32,12 @@ def test_zohar():
     dx = data(xarray=True)
     assert len(dx.sel(Antigen='S1').shape) == 3
 
-    d3 = data3D()
+    d3 = Zohar()
     shp3 = d3.tensor.shape
     for ii in range(3):
         assert shp3[ii] == len(d3.axes[ii])
 
-    dx3 = data3D(xarray=True)
+    dx3 = Zohar(xarray=True)
     assert len(dx3.sel(Antigen='RBD').shape) == 2
 
 def test_kaplonek():
