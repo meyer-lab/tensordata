@@ -12,59 +12,32 @@ def load_file(name):
     return data
 
 
-def importData():
-    data = load_file("Luminex-functional-assay")
-    subjects = data.values[:, 1].astype('str')
-    values = data.values[:, 15:].astype('float64')
-    names = data.columns.values[15:].astype('str')
-
-    rec_names = []
-    ant_names = []
-    for str in names:
-        split = str.split('_')
-        rec_names.append(split[0])
-        ant_names.append(split[1])
-
-    unique_rec_names = [i for n, i in enumerate(rec_names) if i not in rec_names[:n]]
-    unique_rec_names = np.array(unique_rec_names)
-    rec_names = np.array(rec_names)
-    
-    unique_ant_names = [i for n, i in enumerate(ant_names) if i not in ant_names[:n]]
-    unique_ant_names = np.array(unique_ant_names)
-    ant_names = np.array(ant_names)
-
-    return  values, subjects, rec_names, unique_rec_names, ant_names, unique_ant_names
-
-
-def makeCube():
-    data, _, rec_names, unique_rec_names, _, _ = importData()
-
-    rec_ind = np.zeros((unique_rec_names.size, int(rec_names.size / unique_rec_names.size))).astype(int)
-
-    for ii in range(unique_rec_names.size):
-        rec_index = np.where(rec_names == unique_rec_names[ii])
-        rec_index = np.array(rec_index)
-        rec_ind[ii, :] = rec_index 
-
-    cube = np.zeros((data[:, 0].size, unique_rec_names.size, rec_ind[0, :].size))
-
-    for subject_ind in range(np.size(cube, 0)):
-        for receptor_ind in range(np.size(cube, 1)):
-            cube[subject_ind, receptor_ind, :] = data[subject_ind, rec_ind[receptor_ind, :]]
-
-    # Check that there are no slices with completely missing data
-    assert ~np.any(np.all(np.isnan(cube), axis=(0, 1)))
-    assert ~np.any(np.all(np.isnan(cube), axis=(0, 2)))
-    assert ~np.any(np.all(np.isnan(cube), axis=(1, 2)))
-
-    return cube
-
-
 def data(xarray = False):
-    cube = makeCube()
-    _, subjects, _, unique_rec_names, _, unique_ant_names = importData()
+    data = load_file("Luminex-functional-assay")
 
-    dat = xr.DataArray(cube, dims=("Sample", "Receptor", "Antigen"),
-                        coords={"Sample":subjects, "Receptor":unique_rec_names, "Antigen":unique_ant_names})
-    return dat
+    params = data.iloc[:, 15:].columns
+    receptors = pd.unique([s.split("_")[0] for s in params])
+    antigens = pd.unique([s.split("_")[1] for s in params])
+    subjects = pd.unique(data.loc[:, "Age.at.Presentation"])
+
+    xdata = xr.DataArray(
+        coords = {
+            "Subject": subjects,
+            "Antigen": antigens,
+            "Receptor": receptors
+        },
+        dims=("Subject", "Antigen", "Receptor")
+    )
+
+    for index, row in data.iterrows():
+        for param in row.index[15:]:
+            R, Ag = param.split("_")
+            xdata.loc[{"Subject": row["Age.at.Presentation"],
+                       "Antigen": Ag,
+                       "Receptor": R}] = data.loc[index, param]
+
+    return xdata
+
+
+
 
