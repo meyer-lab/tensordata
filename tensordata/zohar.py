@@ -25,146 +25,30 @@ def pbsSubtractOriginal():
     return df
 
 
-def to_slice(subjects, df):
-    Rlabels, AgLabels = dimensionLabel3D()
-    tensor = np.full((len(subjects), len(AgLabels), len(Rlabels)), np.nan)
-    missing = 0
-
-    for rii, recp in enumerate(Rlabels):
-        for aii, anti in enumerate(AgLabels):
-            try:
-                dfAR = df[recp + "_" + anti]
-                dfAR = dfAR.groupby(by="patient").mean()
-                dfAR = dfAR.reindex(subjects)
-                tensor[:, aii, rii] = dfAR.values
-            except KeyError:
-                #print(recp + "_" + anti)
-                missing += 1
-
-    return tensor
-
-def dayLabels():
-    """ Returns day labels for 4D tensor"""
-    df = pbsSubtractOriginal()
-    days = np.unique(df["days"])
-    return days
-
-def Tensor4D():
-    """ Create a 4D Tensor (Subject, Antigen, Receptor, Time) """
-    df = pbsSubtractOriginal()
-    subjects = np.unique(df['patient_ID'])
-    Rlabels, AgLabels = dimensionLabel3D()
-    days = np.unique(df["days"])
-    ndf = df.iloc[:, np.hstack([[1,10], np.arange(23, len(df.columns))])]
-
-    tensor = np.full((len(subjects), len(AgLabels), len(Rlabels), len(days)), np.nan) # 4D
-
-    for i in range(len(ndf)):
-        row = ndf.iloc[i, :]
-        patient = np.where(row['patient_ID']==subjects)[0][0]
-        day = np.where(row['days']==days)[0][0]
-        for j in range(2, len(ndf.columns)):
-            key = ndf.columns[j].split('_')
-            try:
-                rii = Rlabels.index(key[0])
-                aii = AgLabels.index(key[1])
-                tensor[patient, aii, rii, day] = ndf.iloc[i, j]
-            except:
-                pass
-
-    tensor = np.clip(tensor, 10.0, None)
-    tensor = np.log10(tensor)
-
-    # Mean center each measurement
-    tensor -= np.nanmean(tensor, axis=0)
-
-    return tensor, np.array(df.index)
-
-def Tensor3D():
-    """ Create a 3D Tensor (Antigen, Receptor, Sample in time) """
-    df = pbsSubtractOriginal()
-    Rlabels, AgLabels = dimensionLabel3D()
-
-    tensor = np.full((len(df), len(AgLabels), len(Rlabels)), np.nan)
-    missing = 0
-
-    for rii, recp in enumerate(Rlabels):
-        for aii, anti in enumerate(AgLabels):
-            try:
-                dfAR = df[recp + "_" + anti]
-                tensor[:, aii, rii] = dfAR.values
-            except KeyError:
-                missing += 1
-
-    tensor = np.clip(tensor, 10.0, None)
-    tensor = np.log10(tensor)
-
-    # Mean center each measurement
-    tensor -= np.nanmean(tensor, axis=0)
-
-    return tensor, np.array(df.index)
-
-def dimensionLabel3D():
-    """Returns labels for receptor and antigens, included in the 4D tensor"""
-    receptorLabel = [
-        "IgG1",
-        "IgG2",
-        "IgG3",
-        "IgA1",
-        "IgA2",
-        "IgM",
-        "FcRalpha",
-        "FcR2A",
-        "FcR2B",
-        "FcR3A",
-        "FcR3B"
-    ]
-    antigenLabel = ["S", "RBD", "N", "S1", "S2", "S1 Trimer"]
-    return receptorLabel, antigenLabel
-
-
-def time_components_df(tfac, condition=None):
-    subj = pbsSubtractOriginal()
-    df = pd.DataFrame(tfac.factors[0])
-    comp_names = ["Comp. " + str((i + 1)) for i in range(tfac.factors[0].shape[1])]
-    df.columns = comp_names
-    df['days'] = subj['days'].values
-    df['group'] = subj['group'].values
-    df['week'] = subj['week'].values
-    if condition is not None:
-        df = df.loc[(subj["group"] == condition).values, :]
-    df = df.dropna()
-    df = pd.melt(df, id_vars=['days', 'group', 'week'], value_vars=comp_names)
-    df.rename(columns={'variable': 'Factors'}, inplace=True)
-    return df
-
-
 def data(xarray = False):
     df = pbsSubtractOriginal()
-    subjects = np.unique(df['patient_ID'])
-    tensor, _ = Tensor4D()
-    receptorLabel, antigenLabel = dimensionLabel3D()
-    days = dayLabels()
-
-    return xr.DataArray(tensor, dims=("Subject", "Antigen", "Receptor", "Days"),
-                        coords={"Subject":subjects, "Antigen":antigenLabel, "Receptor":receptorLabel, "Days":days})
-
-
-def data3D(xarray = False):
-    tensor, samples = Tensor3D()
-    receptorLabel, antigenLabel = dimensionLabel3D()
-
-    xdata = xr.DataArray(tensor, dims=("Sample", "Antigen", "Receptor"),
-                        coords={"Sample":samples, "Antigen":antigenLabel, "Receptor":receptorLabel})
     
-    xdata = zo_serology_rename(xdata)
-    
+    params = df.iloc[:, 23:89].columns
+    receptors = pd.unique([s.split("_")[0] for s in params])
+    antigens = pd.unique([s.split("_")[1] for s in params])
+    samples = pd.unique(df['sample_ID'])
+
+    xdata = xr.DataArray(
+        coords = {
+            "Sample": samples,
+            "Antigen": antigens,
+            "Receptor": receptors
+        },
+        dims=("Subject", "Antigen", "Receptor")
+    )
+
+    for index, row in df.iterrows():
+        for param in row.index[23:89]:
+            R, Ag = param.split("_")
+            xdata.loc[{"Sample": row["sample_ID"],
+                       "Antigen": Ag,
+                       "Receptor": R}] = df.loc[index, param]
+
     return xdata
+    
 
-
-def zo_serology_rename(xdata):
-
-    Z_dict = {'Antigen': ['SARS.CoV2_S', 'SARS.CoV2_RBD', 'SARS.CoV2_N', 'SARS.CoV2_S1','SARS.CoV2_S2', 
-                            'SARS.CoV2_S1trimer']}
-
-    return xdata.assign_coords(Z_dict)
