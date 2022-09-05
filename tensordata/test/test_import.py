@@ -23,7 +23,7 @@ def test_alter():
     assert "gp120" in ds
 
 def test_zohar():
-    from ..zohar import data, data3D
+    from ..zohar import data, data3D as Zohar
     d = data()
     shp = d.tensor.shape
     for ii in range(4):
@@ -32,12 +32,12 @@ def test_zohar():
     dx = data(xarray=True)
     assert len(dx.sel(Antigen='S1').shape) == 3
 
-    d3 = data3D()
+    d3 = Zohar()
     shp3 = d3.tensor.shape
     for ii in range(3):
         assert shp3[ii] == len(d3.axes[ii])
 
-    dx3 = data3D(xarray=True)
+    dx3 = Zohar(xarray=True)
     assert len(dx3.sel(Antigen='RBD').shape) == 2
 
 def test_kaplonek():
@@ -55,3 +55,17 @@ def test_kaplonek():
         assert mhp[ii] == len(m.axes[ii])
     ds = MGHds()
     assert len(ds["Fc"].sel(Antigen='CMV').shape) == 3
+
+def test_jones():
+    from ..jones import process_RA_Tensor, make_RA_Tensor
+    process_RA_Tensor()
+    RA_xa = make_RA_Tensor()
+    print(RA_xa.shape)
+    assert len(RA_xa.shape) == 4
+
+def test_serology():
+    from ..serology import concat4D
+    dat = concat4D()
+    assert len(dat["MGH"].shape) == 4
+    assert len(dat["SpaceX"].shape) == 4
+    assert all(dat["MGH"]["Receptor"] == dat["Zohar"]["Receptor"])
