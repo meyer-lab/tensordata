@@ -1,26 +1,20 @@
 def test_atyeo():
     from ..atyeo import data
-    d = data()
-    shp = d.tensor.shape
-    for ii in range(3):
-        assert shp[ii] == len(d.axes[ii])
-
-    dx = data(xarray = True)
+    
+    dx = data()
     assert len(dx.sel(Antigen = 'S').shape) == 2
 
 
 def test_alter():
     from ..alter import data
-    d = data()
-    shp = d.tensor.shape
-    for ii in range(3):
-        assert shp[ii] == len(d.axes[ii])
-    assert d.tensor.shape[0] == d.matrix.shape[0]
-    assert d.matrix.shape[1] ==  len(d.axes[3])
-
-    ds = data(xarray=True)
+    
+    ds = data()
     assert "Fc" in ds
     assert "gp120" in ds
+
+    dx = ds.to_array()
+    assert len(dx.sel(variable='Fc').shape) == 4
+    assert len(dx.sel(variable='gp120').shape) == 4
 
 def test_zohar():
     from ..zohar import data, data3D as Zohar
@@ -29,32 +23,30 @@ def test_zohar():
     for ii in range(4):
         assert shp[ii] == len(d.axes[ii])
 
-    dx = data(xarray=True)
-    assert len(dx.sel(Antigen='S1').shape) == 3
+    dx = data()
+    assert len(dx.sel(Antigen='S1').shape) == 2
+    assert len(dx.sel(Receptor='IgG3').shape) == 2
 
+def test_kaplonek():
+    from ..kaplonek import SpaceX4D, MGH4D
+    sx = SpaceX4D()
+    assert len(sx.sel(Receptor='IgA').shape) == 3
     d3 = Zohar()
     shp3 = d3.tensor.shape
     for ii in range(3):
         assert shp3[ii] == len(d3.axes[ii])
 
+    mx = MGH4D()
+    assert len(mx.sel(Antigen='CMV').shape) == 3
     dx3 = Zohar(xarray=True)
     assert len(dx3.sel(Antigen='RBD').shape) == 2
 
-def test_kaplonek():
-    from ..kaplonek import SpaceX, MGH, MGHds
-    s = SpaceX()
-    shp = s.tensor.shape
-    for ii in range(3):
-        assert shp[ii] == len(s.axes[ii])
-    sx = SpaceX(xarray=True)
-    assert len(sx.sel(Receptor='IgA').shape) == 2
+def test_kaplonekVaccine():
+    from ..kaplonekVaccine import data
 
-    m = MGH()
-    mhp = m.tensor.shape
-    for ii in range(3):
-        assert mhp[ii] == len(m.axes[ii])
-    ds = MGHds()
-    assert len(ds["Fc"].sel(Antigen='CMV').shape) == 3
+    dx = data()
+    assert len(dx.sel(Antigen='RBD').shape) == 2
+    assert len(dx.sel(Receptor='IgG3').shape) == 2
 
 def test_jones():
     from ..jones import process_RA_Tensor, make_RA_Tensor
@@ -69,3 +61,10 @@ def test_serology():
     assert len(dat["MGH"].shape) == 4
     assert len(dat["SpaceX"].shape) == 4
     assert all(dat["MGH"]["Receptor"] == dat["Zohar"]["Receptor"])
+
+def test_chung():
+    from ..chung import data
+
+    dx = data()
+    assert len(dx.sel(Antigen='SARS2 Trimer').shape) == 2
+    assert len(dx.sel(Receptor='IgM').shape) == 2

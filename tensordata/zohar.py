@@ -39,7 +39,7 @@ def data(xarray = False):
             "Antigen": antigens,
             "Receptor": receptors
         },
-        dims=("Subject", "Antigen", "Receptor")
+        dims=("Sample", "Antigen", "Receptor")
     )
 
     for index, row in df.iterrows():
