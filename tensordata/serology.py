@@ -1,5 +1,5 @@
 from .kaplonek import MGH4D, SpaceX4D
-from .zohar import data3D as Zohar
+from .zohar import data as Zohar
 import numpy as np
 import xarray as xr
 
@@ -36,12 +36,8 @@ def serology_rename():
     S = normalizeSubj(S)
     Z = normalizeSubj(Z)
 
-    # Specific to Kaplonek MGH 3D/4D
-    if (len(M.dims) == 4):
-        M = M.rename({'Day': 'Time'})
-
-    S_samp = {'Sample': S['Sample'].values.astype(str)}
-    return M.assign_coords(M_dict), S.assign_coords(S_dict).assign_coords(S_samp), Z.assign_coords(Z_dict)
+    #S_samp = {'Sample': S['Sample'].values.astype(str)}
+    return M.assign_coords(M_dict), S.assign_coords(S_dict), Z.assign_coords(Z_dict)
 
 
 """ Assemble the concatenated COVID tensor in 3D """
@@ -69,7 +65,7 @@ def sharedElements(occurence: int, *args):
 def concat4D():
     M = MGH4D(xarray=True).assign_coords(M_dict)
     # M = normalizeSubj(M)
-    M = M.rename({'Subject': 'Subject_MGH', 'Day': 'Time_MGH'})
+    M = M.rename({'Subject': 'Subject_MGH', 'Time': 'Time_MGH'})
     M.name = "MGH"
 
     S = SpaceX4D().assign_coords(S_dict)
