@@ -13,7 +13,7 @@ def normalizeSubj(cube):
     cube = cube / np.nanstd(cube, axis=0)
     return cube
 
-
+# Specific to Kaplonek MGH
 M_dict = {'Antigen': ['SARS.CoV2_N', 'CoV.OC43', 'Flu_HA', 'SARS.CoV2_S1', 'Ebola_gp', 'CMV',
                       'SARS.CoV2_S', 'SARS.CoV2_S2', 'SARS.CoV2_RBD']}
 
@@ -36,7 +36,6 @@ def serology_rename():
     S = normalizeSubj(S)
     Z = normalizeSubj(Z)
 
-    #S_samp = {'Sample': S['Sample'].values.astype(str)}
     return M.assign_coords(M_dict), S.assign_coords(S_dict), Z.assign_coords(Z_dict)
 
 

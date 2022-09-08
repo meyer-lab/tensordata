@@ -87,15 +87,3 @@ def split(str, sep, pos):
     str = str.split(sep)
     return sep.join(str[:pos]), sep.join(str[pos:])
 
-def serology_rename():
-    M, S = MGH4D(), SpaceX4D()
-    
-    M_dict = {'Antigen': ['SARS.CoV2_N', 'CoV.OC43', 'Flu_HA', 'SARS.CoV2_S1', 'Ebola_gp', 'CMV',
-                                        'SARS.CoV2_S', 'SARS.CoV2_S2', 'SARS.CoV2_RBD']}
-
-    S_dict = {'Antigen': ['CoV.HKU1_S', 'CoV.OC43_RBD', 'CoV.HKU1_RBD', 'CoV.OC43_S', 'SARS.CoV2_S',
-                            'SARS.CoV2_S1', 'SARS.CoV2_RBD', 'SARS_RBD', 'SARS.CoV2_S2', 'Flu_HA',
-                            'Ebola_gp', 'MERS_RBD', 'SARS_S', 'MERS_S']}
-
-
-    return M.assign_coords(M_dict), S.assign_coords(S_dict)
