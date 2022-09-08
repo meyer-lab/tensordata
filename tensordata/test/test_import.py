@@ -17,11 +17,7 @@ def test_alter():
     assert len(dx.sel(variable='gp120').shape) == 4
 
 def test_zohar():
-    from ..zohar import data, data3D as Zohar
-    d = data()
-    shp = d.tensor.shape
-    for ii in range(4):
-        assert shp[ii] == len(d.axes[ii])
+    from ..zohar import data 
 
     dx = data()
     assert len(dx.sel(Antigen='S1').shape) == 2
@@ -29,17 +25,12 @@ def test_zohar():
 
 def test_kaplonek():
     from ..kaplonek import SpaceX4D, MGH4D
+    
     sx = SpaceX4D()
     assert len(sx.sel(Receptor='IgA').shape) == 3
-    d3 = Zohar()
-    shp3 = d3.tensor.shape
-    for ii in range(3):
-        assert shp3[ii] == len(d3.axes[ii])
-
+    
     mx = MGH4D()
     assert len(mx.sel(Antigen='CMV').shape) == 3
-    dx3 = Zohar(xarray=True)
-    assert len(dx3.sel(Antigen='RBD').shape) == 2
 
 def test_kaplonekVaccine():
     from ..kaplonekVaccine import data
