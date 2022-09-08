@@ -1,4 +1,4 @@
-from .kaplonek import MGH, MGH4D, SpaceX, SpaceX4D
+from .kaplonek import MGH4D, SpaceX4D
 from .zohar import data3D as Zohar
 import numpy as np
 import xarray as xr
@@ -30,7 +30,7 @@ Z_dict = {'Antigen': ['SARS.CoV2_S', 'SARS.CoV2_RBD', 'SARS.CoV2_N', 'SARS.CoV2_
 
 
 def serology_rename():
-    M, S, Z = MGH(xarray=True), SpaceX(xarray=True), Zohar(xarray=True)
+    M, S, Z = MGH4D(xarray=True), SpaceX4D(xarray=True), Zohar(xarray=True)
 
     M = normalizeSubj(M)
     S = normalizeSubj(S)
