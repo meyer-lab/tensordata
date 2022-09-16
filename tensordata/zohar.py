@@ -50,7 +50,7 @@ def dayLabels():
     days = np.unique(df["days"])
     return days
 
-def Tensor4D():
+def Tensor4D(logscale=True):
     """ Create a 4D Tensor (Subject, Antigen, Receptor, Time) """
     df = pbsSubtractOriginal()
     subjects = np.unique(df['patient_ID'])
@@ -73,15 +73,16 @@ def Tensor4D():
             except:
                 pass
 
-    tensor = np.clip(tensor, 10.0, None)
-    tensor = np.log10(tensor)
+    if logscale:
+        tensor = np.clip(tensor, 10.0, None)
+        tensor = np.log10(tensor)
 
-    # Mean center each measurement
-    tensor -= np.nanmean(tensor, axis=0)
+        # Mean center each measurement
+        tensor -= np.nanmean(tensor, axis=0)
 
     return tensor, np.array(df.index)
 
-def Tensor3D():
+def Tensor3D(logscale=True):
     """ Create a 3D Tensor (Antigen, Receptor, Sample in time) """
     df = pbsSubtractOriginal()
     Rlabels, AgLabels = dimensionLabel3D()
@@ -97,11 +98,12 @@ def Tensor3D():
             except KeyError:
                 missing += 1
 
-    tensor = np.clip(tensor, 10.0, None)
-    tensor = np.log10(tensor)
+    if logscale:
+        tensor = np.clip(tensor, 10.0, None)
+        tensor = np.log10(tensor)
 
-    # Mean center each measurement
-    tensor -= np.nanmean(tensor, axis=0)
+        # Mean center each measurement
+        tensor -= np.nanmean(tensor, axis=0)
 
     return tensor, np.array(df.index)
 
@@ -140,10 +142,10 @@ def time_components_df(tfac, condition=None):
     return df
 
 
-def data(xarray = False):
+def data(xarray = False, logscale=True):
     df = pbsSubtractOriginal()
     subjects = np.unique(df['patient_ID'])
-    tensor, _ = Tensor4D()
+    tensor, _ = Tensor4D(logscale=logscale)
     receptorLabel, antigenLabel = dimensionLabel3D()
     days = dayLabels()
 
@@ -157,8 +159,8 @@ def data(xarray = False):
         axes=[subjects, antigenLabel, receptorLabel, days],
     )
 
-def data3D(xarray = False):
-    tensor, samples = Tensor3D()
+def data3D(xarray = False, logscale=True):
+    tensor, samples = Tensor3D(logscale=logscale)
     receptorLabel, antigenLabel = dimensionLabel3D()
 
     if xarray:

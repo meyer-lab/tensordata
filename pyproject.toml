@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tensordata"
-version = "0.0.5"
+version = "0.0.6"
 description = "A common repository for tensor structured datasets."
 authors = ["Cyrillus Tan <cyztan@gmail.com>"]
 license = "MIT"
