@@ -25,7 +25,7 @@ def pbsSubtractOriginal():
     return df
 
 
-def data(xarray = False):
+def data():
     df = pbsSubtractOriginal()
     
     params = df.iloc[:, 23:89].columns

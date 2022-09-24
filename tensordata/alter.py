@@ -174,11 +174,10 @@ def createCube():
 
     return cube, glyCube
 
-def data(xarray = False):
+def data():
     cube, glyCube = createCube()
     subjects, detections, antigen = getAxes()
     glycan, _ = importGlycan()
-
    
     return xr.Dataset(
         {

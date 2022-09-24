@@ -1,5 +1,4 @@
 from os.path import join, dirname
-import numpy as np
 import pandas as pd
 import xarray as xr
 
@@ -12,7 +11,7 @@ def load_file(name):
     return data
 
 
-def data(xarray = False):
+def data():
     data = load_file("Luminex-functional-assay")
 
     params = data.iloc[:, 15:].columns

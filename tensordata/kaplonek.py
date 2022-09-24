@@ -1,5 +1,4 @@
 from os.path import join, dirname
-import numpy as np
 import xarray as xr
 import pandas as pd
 
@@ -17,7 +16,7 @@ def load_file(name):
     return data
 
 
-def SpaceX4D(xarray = False):
+def SpaceX4D():
     data = load_file("SpaceX_Sero.Data")
     meta = load_file("SpaceX_meta.data")
     data = pd.concat([data, meta], join='outer', axis=1)
@@ -50,7 +49,7 @@ def SpaceX4D(xarray = False):
 
 
 
-def MGH4D(xarray = False):
+def MGH4D():
     data = load_file("MGH_Sero.Neut.WHO124.log10")
     
     params = load_file("MGH_Features")

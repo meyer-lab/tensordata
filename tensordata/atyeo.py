@@ -1,5 +1,4 @@
 from os.path import join, dirname
-import numpy as np
 import xarray as xr
 import pandas as pd
 
@@ -12,7 +11,7 @@ def load_file(name):
     return data
 
 
-def data(xarray = False):
+def data():
     data = load_file("atyeo_covid")
     data = data.iloc[:22, :]
 
