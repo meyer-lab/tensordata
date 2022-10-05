@@ -26,7 +26,9 @@ def pbsSubtractOriginal():
 
 
 def data():
-    df = pbsSubtractOriginal()
+
+    df = pd.read_csv(join(path_here, "tensordata/zohar2020/ZoharCovData.csv"))
+    df = df.dropna(subset=["days"]).reset_index(drop=True)
     
     params = df.iloc[:, 23:89].columns
     receptors = pd.unique([s.split("_")[0] for s in params])
