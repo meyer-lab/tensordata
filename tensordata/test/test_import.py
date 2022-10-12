@@ -37,10 +37,14 @@ def test_kaplonek():
     assert np.isclose(sx.loc[123947, "CoV2_S", "IgM", 0], 3.524688150)
     assert np.isclose(sx.loc[124273, "MERS_S", "IgM", 0], 5.002234117)
     
-    mx = MGH4D()
+    mx = MGH4D()['Serology']
     assert len(mx.sel(Antigen='CMV').shape) == 3
     assert np.isclose(mx.loc["C4-014", "CMV", "IgG1", "D3"], 2.88166991)
     assert np.isclose(mx.loc["C4-342", "SARS.CoV2_N", "IgG2", "D0"], 4.11416750)
+
+    mx_func = MGH4D()['Functional']
+    assert np.isclose(mx_func.loc["C4-066", "ADCD", "D0"], 28856.447735)
+    assert np.isclose(mx_func.loc["C4-372", "ADNP", "D3"], 83251.3686252)
 
 def test_kaplonekVaccine():
     from ..kaplonekVaccine import data

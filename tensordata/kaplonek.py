@@ -79,7 +79,34 @@ def MGH4D():
                        "Antigen": Ag,
                        "Receptor": R}] = data.loc[index, param]
 
-    return xdata
+
+    func_feats = data.columns[-4:]
+
+    func_xdata = xr.DataArray(
+        coords = {
+            "Subject": subjects,
+            "Feature": func_feats,
+            "Time": days,
+        },
+        dims=("Subject", "Feature", "Time")
+    )
+
+    for index, row in data.iterrows():
+        for feat in func_feats:
+            sub, day = row["Unnamed: 0"].split("_")
+            func_xdata.loc[{"Subject": sub,
+                       "Time": day,
+                       "Feature": feat}] = data.loc[index, feat]
+
+    return xr.Dataset(
+                data_vars = {"Serology": xdata, "Functional": func_xdata}, 
+                coords = {
+                    "Subject": subjects, 
+                    "Feature": func_feats, 
+                    "Antigen": antigens, 
+                    "Receptor":receptors, 
+                    "Time": days}
+            )
 
 
 def split(str, sep, pos):
