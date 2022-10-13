@@ -10,6 +10,7 @@ python = "^3.8"
 numpy = "^1.22.1"
 pandas = "^1.4.0"
 xarray = "^2022.3.0"
+tensorly = {git = "https://github.com/tensorly/tensorly.git"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
