@@ -30,7 +30,7 @@ Z_dict = {'Antigen': ['SARS.CoV2_S', 'SARS.CoV2_RBD', 'SARS.CoV2_N', 'SARS.CoV2_
 
 
 def serology_rename():
-    M, S, Z = MGH4D(), SpaceX4D(), Zohar()
+    M, S, Z = MGH4D()['Serology'], SpaceX4D(), Zohar()
 
     M = normalizeSubj(M)
     S = normalizeSubj(S)
@@ -62,7 +62,7 @@ def sharedElements(occurence: int, *args):
 
 
 def concat4D():
-    M = MGH4D().assign_coords(M_dict)
+    M = MGH4D()['Serology'].assign_coords(M_dict)
     # M = normalizeSubj(M)
     M = M.rename({'Subject': 'Subject_MGH', 'Time': 'Time_MGH'})
     M.name = "MGH"
