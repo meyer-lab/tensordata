@@ -1,5 +1,5 @@
-from .kaplonek import MGH, MGH4D, SpaceX, SpaceX4D
-from .zohar import data3D as Zohar
+from .kaplonek import MGH4D, SpaceX4D
+from .zohar import data as Zohar
 import numpy as np
 import xarray as xr
 
@@ -13,7 +13,7 @@ def normalizeSubj(cube):
     cube = cube / np.nanstd(cube, axis=0)
     return cube
 
-
+# Specific to Kaplonek MGH
 M_dict = {'Antigen': ['SARS.CoV2_N', 'CoV.OC43', 'Flu_HA', 'SARS.CoV2_S1', 'Ebola_gp', 'CMV',
                       'SARS.CoV2_S', 'SARS.CoV2_S2', 'SARS.CoV2_RBD']}
 
@@ -30,18 +30,13 @@ Z_dict = {'Antigen': ['SARS.CoV2_S', 'SARS.CoV2_RBD', 'SARS.CoV2_N', 'SARS.CoV2_
 
 
 def serology_rename():
-    M, S, Z = MGH(xarray=True), SpaceX(xarray=True), Zohar(xarray=True)
+    M, S, Z = MGH4D()['Serology'], SpaceX4D(), Zohar()
 
     M = normalizeSubj(M)
     S = normalizeSubj(S)
     Z = normalizeSubj(Z)
 
-    # Specific to Kaplonek MGH 3D/4D
-    if (len(M.dims) == 4):
-        M = M.rename({'Day': 'Time'})
-
-    S_samp = {'Sample': S['Sample'].values.astype(str)}
-    return M.assign_coords(M_dict), S.assign_coords(S_dict).assign_coords(S_samp), Z.assign_coords(Z_dict)
+    return M.assign_coords(M_dict), S.assign_coords(S_dict), Z.assign_coords(Z_dict)
 
 
 """ Assemble the concatenated COVID tensor in 3D """
@@ -67,16 +62,16 @@ def sharedElements(occurence: int, *args):
 
 
 def concat4D():
-    M = MGH4D(xarray=True).assign_coords(M_dict)
+    M = MGH4D()['Serology'].assign_coords(M_dict)
     # M = normalizeSubj(M)
-    M = M.rename({'Subject': 'Subject_MGH', 'Day': 'Time_MGH'})
+    M = M.rename({'Subject': 'Subject_MGH', 'Time': 'Time_MGH'})
     M.name = "MGH"
 
     S = SpaceX4D().assign_coords(S_dict)
     S = S.rename({'Subject': 'Subject_SpaceX', 'Time': 'Time_SpaceX'})
     S.name = "SpaceX"
 
-    Z = Zohar(xarray=True).assign_coords(Z_dict)
+    Z = Zohar().assign_coords(Z_dict)
     Z = Z.rename({'Sample': 'Sample_Zohar'})
     Z.name = "Zohar"
 

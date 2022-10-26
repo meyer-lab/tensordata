@@ -5,7 +5,6 @@ from os.path import join, dirname
 import numpy as np
 import xarray as xr
 import pandas as pd
-from .__init__ import Bunch
 
 
 path_here = dirname(dirname(__file__))
@@ -175,23 +174,15 @@ def createCube():
 
     return cube, glyCube
 
-def data(xarray = False):
+def data():
     cube, glyCube = createCube()
     subjects, detections, antigen = getAxes()
     glycan, _ = importGlycan()
-
-    if xarray:
-        return xr.Dataset(
-            {
-                "Fc": (["Sample", "Receptor", "Antigen"], cube),
-                "gp120": (["Sample", "Glycan"], glyCube),
-            },
-            coords = {"Sample": subjects, "Receptor": detections, "Antigen": antigen, "Glycan": glycan},
-        )
-
-    return Bunch(
-        tensor=cube,
-        matrix=glyCube,
-        mode=["Sample", "Receptor", "Antigen", "Glycan"],
-        axes=[subjects, detections, antigen, glycan],
+   
+    return xr.Dataset(
+        {
+            "Fc": (["Sample", "Receptor", "Antigen"], cube),
+            "gp120": (["Sample", "Glycan"], glyCube),
+        },
+        coords = {"Sample": subjects, "Receptor": detections, "Antigen": antigen, "Glycan": glycan},
     )

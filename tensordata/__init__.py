@@ -1,4 +1,4 @@
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 
 class Bunch(dict):
     """ A Bunch, exposing dict keys as a keys() method.

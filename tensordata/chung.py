@@ -1,8 +1,7 @@
 from os.path import join, dirname
-import numpy as np
 import pandas as pd
 import xarray as xr
-from .__init__ import Bunch
+import numpy as np
 
 path_here = dirname(dirname(__file__))
 
@@ -11,66 +10,42 @@ def load_file(name):
     data = pd.read_csv(join(path_here, "tensordata/chung2021/" + name + ".csv"), delimiter=",", comment="#")
 
     return data
-
-
-def importData():
-    data = load_file("fig6")
-    subjects = data.values[:, 0].astype('str')
-    values = data.values[:, 5:].astype('float64')
-
-    names = load_file("fig1")
-    rec_names = names.columns.values[12:].astype('str')
-    length = len(rec_names)
-    unique_rec_names = rec_names[0:length:16]
     
-    ant_names = names.values[0,12:].astype('str')
-    for ii, str in enumerate(ant_names):
-        ant_names[ii] = str.replace("\r\n", "")
-    unique_ant_names = ant_names[:16]
+def data():
+    data = load_file("fig6")
 
-    return  values, subjects, rec_names, unique_rec_names, ant_names, unique_ant_names
+    pan_params = data.iloc[:, 5:21].columns
+    params = data.iloc[:, 21:].columns
 
+    antigens = pd.unique([split(s, " ", -1)[0] for s in params])
+    pan_receptors = pd.unique([split(s, " ", -2)[1] for s in pan_params])
+    receptors = pd.unique([split(s, " ", -1)[1] for s in params])
+    subjects = pd.unique(data.loc[:, "Patient"])
 
-def makeCube():
-    data, _, rec_names, unique_rec_names, _, unique_ant_names = importData()
-
-    rec_ind = np.zeros((unique_rec_names.size, int(rec_names.size / unique_rec_names.size))).astype(int)
-
-    for ii in range(unique_rec_names.size):
-        rec_index = np.where(rec_names == unique_rec_names[ii])
-        rec_index = np.array(rec_index)
-        for jj in range(unique_ant_names.size):
-            rec_ind[ii, jj] = rec_index + jj
-
-    cube = np.zeros((data[:, 0].size, unique_rec_names.size, rec_ind[0, :].size))
-
-    for subject_ind in range(np.size(cube, 0)):
-        for receptor_ind in range(np.size(cube, 1)):
-            cube[subject_ind, receptor_ind, :] = data[subject_ind, rec_ind[receptor_ind, :]]
-
-    # Check that there are no slices with completely missing data
-    assert ~np.any(np.all(np.isnan(cube), axis=(0, 1)))
-    assert ~np.any(np.all(np.isnan(cube), axis=(0, 2)))
-    assert ~np.any(np.all(np.isnan(cube), axis=(1, 2)))
-
-    return cube
-
-def data(xarray = False):
-    cube = makeCube()
-    _, subjects, _, unique_rec_names, _, unique_ant_names = importData()
-    unique_ant_names = [s.replace("\n", "") for s in unique_ant_names]
-    if xarray:
-        dat = xr.DataArray(cube, dims=("Sample", "Receptor", "Antigen"),
-                            coords={"Sample":subjects, "Receptor":unique_rec_names, "Antigen":unique_ant_names})
-        return dat
-    return Bunch(
-        tensor = cube,
-        mode=["Sample", "Receptor", "Antigen"],
-        axes = [subjects, unique_rec_names, unique_ant_names],
+    xdata = xr.DataArray(
+        coords = {
+            "Subject": subjects,
+            "Antigen": antigens,
+            "Receptor": np.concatenate((pan_receptors, receptors))
+        },
+        dims=("Subject", "Antigen", "Receptor")
     )
 
+    for index, row in data.iterrows():
+        for pan_param in row.index[5:21]:
+            Ag, R = split(pan_param, " ", -2)
+            xdata.loc[{"Subject": row["Patient"],
+                       "Antigen": Ag,
+                       "Receptor": R}] = data.loc[index, pan_param]
+        for param in row.index[21:]:
+            Ag, R = split(param, " ", -1)
+            xdata.loc[{"Subject": row["Patient"],
+                       "Antigen": Ag,
+                       "Receptor": R}] = data.loc[index, param]
+
+    return xdata
 
 
-    
-
-
+def split(str, sep, pos):
+    str = str.split(sep)
+    return sep.join(str[:pos]), sep.join(str[pos:])
