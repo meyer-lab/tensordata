@@ -1,6 +1,7 @@
 from os.path import join, dirname
 import xarray as xr
 import pandas as pd
+from .util import split 
 
 path_here = dirname(dirname(__file__))
 
@@ -109,7 +110,5 @@ def MGH4D():
             )
 
 
-def split(str, sep, pos):
-    str = str.split(sep)
-    return sep.join(str[:pos]), sep.join(str[pos:])
+
 
