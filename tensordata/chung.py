@@ -2,6 +2,7 @@ from os.path import join, dirname
 import pandas as pd
 import xarray as xr
 import numpy as np
+from .util import split 
 
 path_here = dirname(dirname(__file__))
 
@@ -45,7 +46,3 @@ def data():
 
     return xdata
 
-
-def split(str, sep, pos):
-    str = str.split(sep)
-    return sep.join(str[:pos]), sep.join(str[pos:])
