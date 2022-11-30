@@ -4,6 +4,7 @@ from tensorly.regression.cp_plsr import *
 import numpy as np
 import xarray as xr
 from tensorly.decomposition._cp import CPTensor, cp_to_tensor
+import pandas as pd
 
 def calcR2X(tOrig, tFac):
     tMask = np.isfinite(tOrig)
@@ -16,7 +17,7 @@ def calcR2X(tOrig, tFac):
 
 
 
-def plsr():
+def plsr(R):
     serology = MGH4D()["Serology"].stack(Sample = ("Subject", "Time"))
     finite_ser_ind = np.all(np.isfinite(serology.values), axis=(0,1))
 
@@ -30,7 +31,11 @@ def plsr():
     X = np.transpose(finite_ser.values)
     Y = np.transpose(finite_func.values)
 
-    for rr in range(1, 6):
+    rr = R + 1
+    R2X_arr = np.zeros(R)
+    R2Y_arr = np.zeros(R)
+
+    for rr in range(1, rr):
         model = CP_PLSR(rr)
         model.fit(X, Y)
         Xrecon = CPTensor((None, model.X_factors))
@@ -39,8 +44,9 @@ def plsr():
         YY = Y - np.mean(Y, axis=0)
         R2X = calcR2X(XX, Xrecon)
         R2Y = calcR2X(YY, Yrecon)
-        print(rr, R2X, R2Y)
+        R2X_arr[rr-1] = R2X
+        R2Y_arr[rr-1] = R2Y
 
-    pass
+    return R2X_arr, R2Y_arr
 
 
