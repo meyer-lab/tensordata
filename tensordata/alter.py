@@ -163,9 +163,14 @@ def createCube():
         k = antigen.index(row["variable"])
         cube[i, -1, k] = row["value"]
 
+    # raise columns with negative values by the smallest so all is positive
+    cube -= np.any(cube < 0.0, axis=0) * np.amin(cube, axis=0)
+
     # Clip to 0 as there are a few strongly negative outliers
     # IIa.H/R were offset to negative, so correct that
-    cube[:, 1:11, :] = np.clip(cube[:, 1:11, :], 0, 175000)
+    #cube[:, 1:11, :] = np.clip(cube[:, 1:11, :], 0, 175000)
+    # ^ removed because > 175000 values seems reasonable
+    assert ~np.any(cube < 0.0)
 
     # Check that there are no slices with completely missing data
     assert ~np.any(np.all(np.isnan(cube), axis=(0, 1)))
