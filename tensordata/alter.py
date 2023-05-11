@@ -134,7 +134,7 @@ def selectAlter(Y, Y_pred, evaluation, subset=None):
     return Y, Y_pred
 
 
-@lru_cache()
+@lru_cache(maxsize=1)
 def createCube():
     """ Import the data and assemble the antigen cube. """
     subjects, detections, antigen = getAxes()

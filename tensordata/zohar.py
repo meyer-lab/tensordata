@@ -1,5 +1,6 @@
 """Import Zohar data, tensor formation, plotting raw data."""
 from os.path import join, dirname
+from functools import lru_cache
 import numpy as np
 import xarray as xr
 import pandas as pd
@@ -25,8 +26,8 @@ def pbsSubtractOriginal():
     return df
 
 
+@lru_cache(maxsize=1)
 def data():
-
     df = pd.read_csv(join(path_here, "tensordata/zohar2020/ZoharCovData.csv"))
     df = df.dropna(subset=["days"]).reset_index(drop=True)
     

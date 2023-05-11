@@ -1,4 +1,5 @@
 from os.path import join, dirname
+from functools import lru_cache
 import pandas as pd
 import xarray as xr
 import numpy as np
@@ -11,7 +12,9 @@ def load_file(name):
     data = pd.read_csv(join(path_here, "tensordata/chung2021/" + name + ".csv"), delimiter=",", comment="#")
 
     return data
-    
+
+
+@lru_cache(maxsize=1)
 def data():
     data = load_file("fig6")
 

@@ -59,7 +59,6 @@ def test_jones():
     from ..jones import process_RA_Tensor, make_RA_Tensor
     process_RA_Tensor()
     RA_xa = make_RA_Tensor()
-    print(RA_xa.shape)
     assert len(RA_xa.shape) == 4
 
 def test_serology():

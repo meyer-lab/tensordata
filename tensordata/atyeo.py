@@ -1,4 +1,5 @@
 from os.path import join, dirname
+from functools import lru_cache
 import xarray as xr
 import pandas as pd
 
@@ -11,6 +12,7 @@ def load_file(name):
     return data
 
 
+@lru_cache(maxsize=1)
 def data():
     data = load_file("atyeo_covid")
     data = data.iloc[:22, :]
