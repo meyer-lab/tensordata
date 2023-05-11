@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: self-hosted
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install Poetry
       uses: snok/install-poetry@v1
       with:
@@ -18,7 +18,7 @@ jobs:
     - name: Test with pytest
       run: make coverage.xml
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
         flags: unittests
