@@ -2,56 +2,25 @@
 from os.path import join, dirname
 from functools import lru_cache
 import numpy as np
-import xarray as xr
 import pandas as pd
 
 path_here = dirname(dirname(__file__))
 
-def pbsSubtractOriginal():
-    """ Paper Background subtract, will keep all rows for any confusing result. """
-    Cov = pd.read_csv(join(path_here, "tensordata/zohar2020/ZoharCovData.csv"), index_col=0)
-    # 23 (0-> 23) is the start of IgG1_S
-    Demographics = Cov.iloc[:, 0:23]
-    Serology = Cov.iloc[:, 23::]
-    Serology -= Serology.loc["PBS"].values.squeeze()
-    df = pd.concat([Demographics, Serology], axis=1)
-    df = df.loc[np.isfinite(df["patient_ID"]), :]
-    df["week"] = np.array(df["days"] // 7 + 1.0, dtype=int)
-    df["patient_ID"] = df["patient_ID"].astype('int32')
-    df["group"] = pd.Categorical(df["group"], ["Negative", "Mild", "Moderate", "Severe", "Deceased"])
-    df = df.sort_values(by=["group", "days", "patient_ID"])
-    df = df.reset_index()
-    # Get rid of any data that doesn't have a time component (i.e. "nan" for day)
-    df = df.dropna(subset=["days"]).reset_index(drop=True)
-    return df
-
-
 @lru_cache(maxsize=1)
-def data():
+def data(subtract_baseline=False):
     df = pd.read_csv(join(path_here, "tensordata/zohar2020/ZoharCovData.csv"))
-    df = df.dropna(subset=["days"]).reset_index(drop=True)
-    
-    params = df.iloc[:, 23:89].columns
-    receptors = pd.unique([s.split("_")[0] for s in params])
-    antigens = pd.unique([s.split("_")[1] for s in params])
-    samples = pd.unique(df['sample_ID'])
+    baseline = df.loc[df['sample_ID'] == 'PBS'].values.squeeze()[23:89]
+    df = df.loc[np.isfinite(df["patient_ID"]), :]
+    df["patient_ID"] = df["patient_ID"].astype('int32')
+    df["group"] = pd.Categorical(df["group"])
+    df = df.sort_values(by=["group", "days", "patient_ID"])
+    df = df.dropna(subset=["days"])
+    df = df.iloc[:,  np.r_[0, 23:89]]
+    if subtract_baseline:
+        df.iloc[:, 1:] -= baseline
 
-    xdata = xr.DataArray(
-        coords = {
-            "Sample": samples,
-            "Antigen": antigens,
-            "Receptor": receptors
-        },
-        dims=("Sample", "Antigen", "Receptor")
-    )
-
-    for index, row in df.iterrows():
-        for param in row.index[23:89]:
-            R, Ag = param.split("_")
-            xdata.loc[{"Sample": row["sample_ID"],
-                       "Antigen": Ag,
-                       "Receptor": R}] = df.loc[index, param]
-
-    return xdata
-    
-
+    df = df.rename(columns={"sample_ID": "Sample"})
+    df = pd.melt(df, id_vars='Sample', var_name='Measurement', value_name='Value')
+    df[['Receptor', 'Antigen']] = df['Measurement'].str.split('_', expand=True)
+    df = df.drop(columns="Measurement")
+    return df.set_index(["Sample", "Antigen", "Receptor"]).to_xarray()["Value"]

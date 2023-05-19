@@ -2,6 +2,7 @@ from os.path import join, dirname
 from functools import lru_cache
 import xarray as xr
 import pandas as pd
+import numpy as np
 from .util import split
 
 path_here = dirname(dirname(__file__))
@@ -26,37 +27,13 @@ def load_file(name):
 def SpaceX4D():
     data = load_file("SpaceX_Sero.Data")
     meta = load_file("SpaceX_meta.data")
-    data = pd.concat([data, meta], join="outer", axis=1)
-
-    params = data.iloc[:, 1:85].columns
-    antigens = pd.unique([s.split("-")[0] for s in params])
-    antibodies = pd.unique([s.split("-")[1] for s in params])
-    patients = pd.unique(data.loc[:, "Pat.ID"])
-    days = pd.unique(data.loc[:, "time.point"])
-
-    xdata = xr.DataArray(
-        coords={
-            "Subject": patients,
-            "Antigen": antigens,
-            "Receptor": antibodies,
-            "Time": days,
-        },
-        dims=("Subject", "Antigen", "Receptor", "Time"),
-    )
-
-    for index, row in data.iterrows():
-        for param in row.index[1:85]:
-            Ag, Ab = param.split("-")
-            xdata.loc[
-                {
-                    "Subject": row["Pat.ID"],
-                    "Time": row["time.point"],
-                    "Antigen": Ag,
-                    "Receptor": Ab,
-                }
-            ] = data.loc[index, param]
-
-    return xdata
+    df = pd.concat([data, meta], join="outer", axis=1)
+    df = df.drop(columns="Unnamed: 0")
+    df = pd.melt(df, id_vars=['Pat.ID', 'time.point'], var_name='Measurement', value_name='Value')
+    df[['Antigen', 'Receptor']] = df['Measurement'].str.split('-', expand=True)
+    df = df.drop(columns="Measurement")
+    df = df.rename(columns={"Pat.ID": "Subject", "time.point": "Time"})
+    return df.set_index(["Subject", "Antigen", "Time", "Receptor"]).to_xarray()["Value"]
 
 
 @lru_cache(maxsize=1)
@@ -114,3 +91,19 @@ def MGH4D():
             "Time": days,
         },
     )
+
+def MGH4D2():
+    data = load_file("MGH_Sero.Neut.WHO124.log10")
+    data = data.rename(columns={"Unnamed: 0": "Sample"})
+    data[['Subject', 'Time']] = data['Sample'].str.split('_', expand=True)
+    params = load_file("MGH_Features")
+
+    func = data.iloc[:, 91:]
+    data = data.iloc[:, np.r_[1:91, 95:97]]
+    data = pd.melt(data, id_vars=['Subject', 'Time'], var_name='Names', value_name='Serology')
+    data = data.join(params.set_index('Names'), on="Names").drop(columns="Names")
+    dx = data.set_index(['Subject', 'Time', "Antigen", "Receptor"]).to_xarray()
+
+    func = pd.melt(func, id_vars=['Subject', 'Time'], var_name='Feature', value_name='Functional')
+    dx["Functional"] = func.set_index(['Subject', 'Time', "Feature"]).to_xarray()["Functional"]
+    return dx
