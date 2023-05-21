@@ -15,10 +15,20 @@ def test_alter():
     ds = data()
     assert "Fc" in ds
     assert "gp120" in ds
+    assert "Functional" in ds
 
-    dx = ds.to_array()
-    assert len(dx.sel(variable='Fc').shape) == 4
-    assert len(dx.sel(variable='gp120').shape) == 4
+    assert len(ds["Sample"]) == 181
+    assert len(ds["Receptor"]) == 22
+    assert len(ds["Glycan"]) == 25
+    assert len(ds["Function"]) == 6
+
+    assert np.isclose(ds["Fc"].loc[753551, "FcgRIIIa", "gp120.PVO"], 14.3)
+    assert np.isclose(ds["Fc"].loc[795613, "FcgRIIIa.V158", "gp120.TRO"], 13146.1 + 681.9)
+    assert np.isclose(ds["Fc"].loc[190469, "IgG", "gp120.MN"], 39235.80337)
+    assert np.isclose(ds["gp120"].loc[184538, "G1FB"], 3.5)
+    assert np.isclose(ds["gp120"].loc[916549, "G2.total"], 38.1)
+    assert np.isclose(ds["Functional"].loc[513662, "ADNP"], 14.42)
+    assert np.isclose(ds["Functional"].loc[472789, "CD107a"], 13.02)
 
 def test_zohar():
     from ..zohar import data 
