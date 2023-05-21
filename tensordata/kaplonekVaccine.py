@@ -1,42 +1,18 @@
 from os.path import join, dirname
+from functools import lru_cache
 import pandas as pd
-import xarray as xr
+import numpy as np
 
 path_here = dirname(dirname(__file__))
 
-def load_file(name):
-    """ Return a requested data file. """
-    data = pd.read_csv(join(path_here, "tensordata/kaplonekVaccine2022/" + name + ".csv"), delimiter=",", comment="#")
 
-    return data
-
-
+@lru_cache(maxsize=1)
 def data():
-    data = load_file("Luminex-functional-assay")
-
-    params = data.iloc[:, 15:].columns
-    receptors = pd.unique([s.split("_")[0] for s in params])
-    antigens = pd.unique([s.split("_")[1] for s in params])
-    subjects = pd.unique(data.loc[:, "Age.at.Presentation"])
-
-    xdata = xr.DataArray(
-        coords = {
-            "Subject": subjects,
-            "Antigen": antigens,
-            "Receptor": receptors
-        },
-        dims=("Subject", "Antigen", "Receptor")
-    )
-
-    for index, row in data.iterrows():
-        for param in row.index[15:]:
-            R, Ag = param.split("_")
-            xdata.loc[{"Subject": row["Age.at.Presentation"],
-                       "Antigen": Ag,
-                       "Receptor": R}] = data.loc[index, param]
-
-    return xdata
-
-
-
+    df = pd.read_csv(join(path_here, "tensordata/kaplonekVaccine2022/Luminex-functional-assay.csv"), delimiter=",", comment="#")
+    df = df.iloc[:, np.r_[1, 15:87]]
+    df = pd.melt(df, id_vars=['Age.at.Presentation'], var_name='Measurement', value_name='Value')
+    df[['Receptor', 'Antigen']] = df['Measurement'].str.split('_', expand=True)
+    df = df.drop(columns="Measurement")
+    df = df.rename(columns={"Age.at.Presentation": "Subject"})
+    return df.set_index(["Subject", "Antigen", "Receptor"]).to_xarray()["Value"]
 

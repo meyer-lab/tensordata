@@ -74,5 +74,5 @@ def test_chung():
     dx = data()
     assert len(dx.sel(Antigen='SARS2 Trimer').shape) == 2
     assert len(dx.sel(Receptor='IgM').shape) == 2
-    assert np.isclose(dx.loc["KK121", "SARS2 S2", "Pan IgG"], 57568)
+    assert np.isclose(dx.loc["KK121", "SARS2 S2", "PanIgG"], 57568)
     assert np.isclose(dx.loc["CP04", "MERS NP", "IgM"], 142382)
