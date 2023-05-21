@@ -26,7 +26,7 @@ def process_RA_Tensor():
         for rep in rep_list:
             file_name = "tensordata/jones2017/SF_Donor_" + donor + "_" + donorDict[donor] + "_Rep" + str(rep) + ".csv"
             raw_data = pd.read_csv(join(path_here, file_name))
-            avg_data = raw_data.groupby(['Sample Name']).mean().reset_index()
+            avg_data = raw_data.groupby(['Sample Name']).mean(numeric_only=True).reset_index()
             
             for index, row in avg_data.iterrows():
                 expString = row["Sample Name"].split(", ")

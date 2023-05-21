@@ -15,10 +15,20 @@ def test_alter():
     ds = data()
     assert "Fc" in ds
     assert "gp120" in ds
+    assert "Functional" in ds
 
-    dx = ds.to_array()
-    assert len(dx.sel(variable='Fc').shape) == 4
-    assert len(dx.sel(variable='gp120').shape) == 4
+    assert len(ds["Sample"]) == 181
+    assert len(ds["Receptor"]) == 22
+    assert len(ds["Glycan"]) == 25
+    assert len(ds["Function"]) == 6
+
+    assert np.isclose(ds["Fc"].loc[753551, "FcgRIIIa", "gp120.PVO"], 14.3)
+    assert np.isclose(ds["Fc"].loc[795613, "FcgRIIIa.V158", "gp120.TRO"], 13146.1 + 681.9)
+    assert np.isclose(ds["Fc"].loc[190469, "IgG", "gp120.MN"], 39235.80337)
+    assert np.isclose(ds["gp120"].loc[184538, "G1FB"], 3.5)
+    assert np.isclose(ds["gp120"].loc[916549, "G2.total"], 38.1)
+    assert np.isclose(ds["Functional"].loc[513662, "ADNP"], 14.42)
+    assert np.isclose(ds["Functional"].loc[472789, "CD107a"], 13.02)
 
 def test_zohar():
     from ..zohar import data 
@@ -59,7 +69,6 @@ def test_jones():
     from ..jones import process_RA_Tensor, make_RA_Tensor
     process_RA_Tensor()
     RA_xa = make_RA_Tensor()
-    print(RA_xa.shape)
     assert len(RA_xa.shape) == 4
 
 def test_serology():
@@ -75,5 +84,5 @@ def test_chung():
     dx = data()
     assert len(dx.sel(Antigen='SARS2 Trimer').shape) == 2
     assert len(dx.sel(Receptor='IgM').shape) == 2
-    assert np.isclose(dx.loc["KK121", "SARS2 S2", "Pan IgG"], 57568)
+    assert np.isclose(dx.loc["KK121", "SARS2 S2", "PanIgG"], 57568)
     assert np.isclose(dx.loc["CP04", "MERS NP", "IgM"], 142382)
