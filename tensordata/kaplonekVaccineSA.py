@@ -7,11 +7,11 @@ import xarray as xr
 
 DATA_DIR = Path(__file__).parent / "kaplonekVaccineSA2023"
 
-df = pd.read_csv(DATA_DIR / "luminex.csv")
-
 
 def data():
     # Separate metadata and luminex data columns
+    df = pd.read_csv(DATA_DIR / "luminex.csv")
+
     luminex_cols = [col for col in df.columns if re.match("^FcR|^Ig[G|M|A]", col)]
     meta_cols = [col for col in df.columns if col not in luminex_cols]
 
@@ -22,26 +22,26 @@ def data():
         dims=["Subject", "Metadata"],
     )
 
-    # Reshape luminex data for 3D DataArray
-    # Parsing Antigen and Detection from column names
     detections, antigens = zip(*[col.split("_", 1) for col in luminex_cols])
-    luminex_data = df[luminex_cols].values.reshape(
-        len(df), len(set(antigens)), len(set(detections))
-    )
+    detections = list(dict.fromkeys(detections))
+    antigens = list(dict.fromkeys(antigens))
 
-    # Create 3D DataArray for luminex data
     luminex_da = xr.DataArray(
-        luminex_data,
+        np.full((len(df), len(antigens), len(detections)), np.NaN),
         coords={
             "Subject": df.index,
-            "Antigen": list(
-                dict.fromkeys(antigens)
-            ),  # remove duplicates, preserve order
-            "Receptor": list(dict.fromkeys(detections)),
+            "Antigen": antigens,
+            "Receptor": detections,
         },
         dims=["Subject", "Antigen", "Receptor"],
     )
 
-    assert np.all(luminex_da.Subject.values == meta_da.Subject.values)
+    for s in df.index:
+        for ag in antigens:
+            for d in detections:
+                luminex_da.loc[s, ag, d] = df.loc[s, f"{d}_{ag}"]
 
-    return xr.Dataset({"Meta": meta_da, "Luminex": luminex_da})
+    # Create 3D DataArray for luminex data
+    ds = xr.Dataset({"Meta": meta_da, "Luminex": luminex_da})
+
+    return ds
