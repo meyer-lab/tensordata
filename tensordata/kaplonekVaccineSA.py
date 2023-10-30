@@ -24,7 +24,7 @@ def data():
 
     # Reshape luminex data for 3D DataArray
     # Parsing Antigen and Detection from column names
-    antigens, detections = zip(*[col.split("_", 1) for col in luminex_cols])
+    detections, antigens = zip(*[col.split("_", 1) for col in luminex_cols])
     luminex_data = df[luminex_cols].values.reshape(
         len(df), len(set(antigens)), len(set(detections))
     )
