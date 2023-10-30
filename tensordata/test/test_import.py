@@ -1,4 +1,9 @@
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
+
+TENSORDATA_DIR = Path(__file__).parent.parent
 
 def test_atyeo():
     from ..atyeo import data
@@ -86,3 +91,13 @@ def test_chung():
     assert len(dx.sel(Receptor='IgM').shape) == 2
     assert np.isclose(dx.loc["KK121", "SARS2 S2", "PanIgG"], 57568)
     assert np.isclose(dx.loc["CP04", "MERS NP", "IgM"], 142382)
+
+def test_kaplonekVaccineSA():
+    from ..kaplonekVaccineSA import data
+    df = pd.read_csv(TENSORDATA_DIR / "kaplonekVaccineSA2023" / "luminex.csv")
+    ds = data()
+    assert np.all(
+        df["infection.status"] == ds["Meta"].sel(Metadata="infection.status").values
+    )
+    assert df.loc[0, "FcR3B_WT.RBD"] == ds["Luminex"].sel(Subject=0, Antigen="WT.RBD", Receptor="FcR3B")
+    assert df.loc[10, "FcR2B_WT.S"] == ds["Luminex"].sel(Subject=10, Antigen="WT.S", Receptor="FcR2B")
