@@ -11,7 +11,7 @@ DATA_PATH = THIS_DIR_PATH / "zohar2020" / "ZoharCovData.csv"
 @lru_cache(maxsize=1)
 def data(subtract_baseline=False):
     df = pd.read_csv(DATA_PATH)
-    baseline = df.loc[df["sample_ID"] == "PBS"].values.squeeze()[23:89]
+    baseline = df.loc[df["sample_ID"] == "PBS"].iloc[:, 23:89].values.squeeze()
     df = df.loc[np.isfinite(df["patient_ID"]), :]
     df["patient_ID"] = df["patient_ID"].astype("int32")
     df["group"] = pd.Categorical(df["group"])
