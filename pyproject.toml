@@ -6,7 +6,7 @@ authors = ["Cyrillus Tan <cyztan@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.11,<3.13"
 numpy = "^1.23"
 pandas = "^1.5.0"
 xarray = "^2022.3.0"
