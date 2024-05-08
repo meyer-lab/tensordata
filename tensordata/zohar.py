@@ -1,6 +1,5 @@
-"""Import Zohar data, tensor formation, plotting raw data."""
 from pathlib import Path
-from functools import lru_cache
+
 import numpy as np
 import pandas as pd
 
@@ -8,7 +7,6 @@ THIS_DIR_PATH = Path(__file__).parent
 DATA_PATH = THIS_DIR_PATH / "zohar2020" / "ZoharCovData.csv"
 
 
-@lru_cache(maxsize=1)
 def data(subtract_baseline=False):
     df = pd.read_csv(DATA_PATH)
     baseline = df.loc[df["sample_ID"] == "PBS"].iloc[:, 23:89].values.squeeze()
