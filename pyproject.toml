@@ -10,11 +10,32 @@ python = ">=3.11,<3.13"
 numpy = "^1.23"
 pandas = "^1.5.0"
 xarray = "^2022.3.0"
+anndata = "^0.10.7"
+scanpy = "^1.10.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
 pytest-cov = "^3.0.0"
+ruff = "^0.4.9"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    # Unused arguments
+    "ARG",
+]
