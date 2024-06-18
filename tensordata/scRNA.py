@@ -9,6 +9,8 @@ import scanpy as sc
 from scipy.sparse import csr_matrix, spmatrix
 from sklearn.utils.sparsefuncs import inplace_column_scale, mean_variance_axis
 
+DATA_DIR = Path(__file__).parent / "scRNA"
+
 
 def prepare_dataset(
     X: anndata.AnnData, condition_name: str, gene_threshold: float
@@ -42,9 +44,8 @@ def prepare_dataset(
     return X
 
 
-def gate_thomson_cells(
-    X, cell_type_df_path=Path("sccp") / "data" / "Thomson" / "ThomsonCellTypes.csv"
-) -> npt.ArrayLike:
+def gate_thomson_cells(X) -> npt.ArrayLike:
+    cell_type_df_path = DATA_DIR / "thomson" / "ThomsonCellTypes.csv"
     """Manually gates cell types for Thomson UMAP"""
     cell_type_df = pd.read_csv(cell_type_df_path, index_col=0)
     cell_type_df.index.name = "cell_barcode"
@@ -58,12 +59,12 @@ def gate_thomson_cells(
 
 def import_thomson(
     gene_threshold=0.01,
-    metafile_path=Path("sccp") / "data" / "Thomson" / "meta.csv",
     anndata_path=Path("/opt") / "andrew" / "thomson_raw.h5ad",
-    doublet_path=Path("sccp") / "data" / "Thomson" / "ThomsonDoublets.csv",
 ) -> anndata.AnnData:
-    """Import Thompson lab PBMC dataset."""
+    """Import Thomson lab PBMC dataset."""
     # Cell barcodes, sample id of treatment and sample number (33482, 3)
+    metafile_path = (DATA_DIR / "thomson" / "meta.csv",)
+    doublet_path = (DATA_DIR / "thomson" / "ThomsonDoublets.csv",)
     metafile = pd.read_csv(metafile_path, usecols=[0, 1])
 
     X = anndata.read_h5ad(anndata_path)
@@ -97,7 +98,7 @@ def import_thomson(
 
 def import_lupus(
     gene_threshold=0.1,
-    anndata_path=Path("/opt") / "andrew" / "lupus.h5ad",
+    anndata_path=Path("/opt") / "andrew" / "lupus" / "lupus.h5ad",
     protein_path=Path("/opt") / "andrew" / "Lupus_study_protein_adjusted.h5ad",
 ) -> anndata.AnnData:
     """Import Lupus PBMC dataset.
@@ -174,7 +175,7 @@ def import_HTAN(
     HTAN_path=Path("/opt") / "extra-storage" / "HTAN",
 ) -> anndata.AnnData:
     """Imports Vanderbilt's HTAN 10X data."""
-    files = HTAN_path.glob("*.mtx.gz")
+    files = list(HTAN_path.glob("*.mtx.gz"))
     futures = []
     data = {}
 
