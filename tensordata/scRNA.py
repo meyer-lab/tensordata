@@ -50,10 +50,8 @@ def gate_thomson_cells(X) -> npt.ArrayLike:
     cell_type_df = pd.read_csv(cell_type_df_path, index_col=0)
     cell_type_df.index.name = "cell_barcode"
     X.obs = X.obs.join(cell_type_df, on="cell_barcode", how="inner")
-
     X.obs["Cell Type"] = X.obs["Cell Type"].values.astype(str)
     X.obs["Cell Type2"] = X.obs["Cell Type2"].values.astype(str)
-
     return X
 
 
@@ -61,10 +59,17 @@ def import_thomson(
     gene_threshold=0.01,
     anndata_path=Path("/opt") / "andrew" / "thomson_raw.h5ad",
 ) -> anndata.AnnData:
-    """Import Thomson lab PBMC dataset."""
+    """
+    Import Thomson lab PBMC dataset.
+
+    Args:
+        gene_threshold: Minimum mean gene expression to keep a gene.
+        anndata_path: Path to the anndata file. The default value is the path on
+            Aretha.
+    """
     # Cell barcodes, sample id of treatment and sample number (33482, 3)
-    metafile_path = (DATA_DIR / "thomson" / "meta.csv",)
-    doublet_path = (DATA_DIR / "thomson" / "ThomsonDoublets.csv",)
+    metafile_path = DATA_DIR / "thomson" / "meta.csv"
+    doublet_path = DATA_DIR / "thomson" / "ThomsonDoublets.csv"
     metafile = pd.read_csv(metafile_path, usecols=[0, 1])
 
     X = anndata.read_h5ad(anndata_path)
@@ -99,9 +104,20 @@ def import_thomson(
 def import_lupus(
     gene_threshold=0.1,
     anndata_path=Path("/opt") / "andrew" / "lupus" / "lupus.h5ad",
-    protein_path=Path("/opt") / "andrew" / "Lupus_study_protein_adjusted.h5ad",
+    protein_path=Path("/opt")
+    / "andrew"
+    / "lupus"
+    / "Lupus_study_protein_adjusted.h5ad",
 ) -> anndata.AnnData:
-    """Import Lupus PBMC dataset.
+    """
+    Import Lupus PBMC dataset.
+
+    Args:
+        gene_threshold: Minimum mean gene expression to keep a gene.
+        anndata_path: Path to the anndata file. The default value is the path on
+            Aretha.
+        protein_path: Path to the protein anndata file. The default value is the path
+            on Aretha.
 
     -- columns from observation data:
     {'batch_cov': POOL (1-23) cell was processed in,
@@ -174,7 +190,13 @@ def import_citeseq(
 def import_HTAN(
     HTAN_path=Path("/opt") / "extra-storage" / "HTAN",
 ) -> anndata.AnnData:
-    """Imports Vanderbilt's HTAN 10X data."""
+    """
+    Imports Vanderbilt's HTAN 10X data.
+
+    Args:
+        HTAN_path: Path to the directory containing the HTAN data. The default
+            value is the path on Aretha.
+    """
     files = list(HTAN_path.glob("*.mtx.gz"))
     futures = []
     data = {}
@@ -202,9 +224,14 @@ def import_HTAN(
 def import_CCLE(
     data_dir_path=Path("/opt") / "extra-storage" / "asm" / "Heiser-barcode" / "CCLE",
 ) -> anndata.AnnData:
-    """Imports barcoded cell data."""
-    # TODO: Still need to add gene names and barcodes.
+    """
+    Imports barcoded cell data.
 
+    Args:
+        data_dir_path: Path to the directory containing the data. The default value
+            is the path on Aretha.
+    """
+    # TODO: Still need to add gene names and barcodes.
     adatas = {
         "HCT116_1": anndata.read_text(
             Path(data_dir_path / "HCT116_tracing_T1.count_mtx.tsv")
@@ -230,6 +257,10 @@ def import_cytokine(
     data_path=Path("/opt") / "extra-storage" / "Treg_h5ads" / "Treg_raw.h5ad",
 ) -> anndata.AnnData:
     """Import Meyer Cytokine PBMC dataset.
+
+    Args:
+        data_path: Path to the anndata file. The default value is the path on .
+
     -- columns from observation data:
     {'Stimulation': Cytokine and Dose}
     """
