@@ -7,11 +7,11 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-numpy = "^2.0.0"
 pandas = "^2.0.0"
 xarray = "^2024.6.0"
 anndata = "^0.10.7"
 scanpy = "^1.10.1"
+numpy = "^1.26"
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.2"
