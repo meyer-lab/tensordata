@@ -10,7 +10,6 @@ python = "^3.12"
 pandas = "^2.0.0"
 xarray = "^2024.6.0"
 anndata = "^0.10.7"
-scanpy = "^1.10.1"
 numpy = "^1.26"
 
 [tool.poetry.dev-dependencies]

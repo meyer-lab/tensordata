@@ -4,9 +4,9 @@ import anndata
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-import scanpy as sc
-from scipy.sparse import csr_matrix, spmatrix
-from sklearn.utils.sparsefuncs import inplace_column_scale, mean_variance_axis
+from scipy.sparse import csr_matrix
+
+from .read_10x_mtx import read_10x_mtx
 
 DATA_DIR = Path(__file__).parent / "scRNA"
 
@@ -23,7 +23,6 @@ def gate_thomson_cells(X) -> npt.ArrayLike:
 
 
 def import_thomson(
-    gene_threshold=0.01,
     anndata_path=Path("/opt") / "andrew" / "thomson_raw.h5ad",
 ) -> anndata.AnnData:
     """
@@ -69,7 +68,6 @@ def import_thomson(
 
 
 def import_lupus(
-    gene_threshold=0.1,
     anndata_path=Path("/opt") / "andrew" / "lupus" / "lupus.h5ad",
     protein_path=Path("/opt")
     / "andrew"
@@ -137,7 +135,7 @@ def import_citeseq(
     files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
 
     data = {
-        k: sc.read_10x_mtx(data_dir_path / k, gex_only=False, make_unique=True)
+        k: read_10x_mtx(data_dir_path / k, gex_only=False, make_unique=True)
         for k in files
     }
 
@@ -160,7 +158,7 @@ def import_HTAN(
     data = {}
 
     for filename in files:
-        data[filename.stem.split("_matrix")[0]] = sc.read_10x_mtx(
+        data[filename.stem.split("_matrix")[0]] = read_10x_mtx(
             HTAN_path,
             gex_only=False,
             make_unique=True,
