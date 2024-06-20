@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import anndata
-import numpy as np
 import numpy.typing as npt
 import pandas as pd
 from scipy.sparse import csr_matrix
