@@ -7,11 +7,11 @@ from scipy.sparse import csr_matrix
 
 from .read_10x_mtx import read_10x_mtx
 
-DATA_DIR = Path(__file__).parent / "scRNA"
+THIS_DIR = Path(__file__).parent
 
 
 def gate_thomson_cells(X) -> npt.ArrayLike:
-    cell_type_df_path = DATA_DIR / "thomson" / "ThomsonCellTypes.csv"
+    cell_type_df_path = THIS_DIR / "thomson" / "ThomsonCellTypes.csv"
     """Manually gates cell types for Thomson UMAP"""
     cell_type_df = pd.read_csv(cell_type_df_path, index_col=0)
     cell_type_df.index.name = "cell_barcode"
@@ -33,8 +33,8 @@ def import_thomson(
             Aretha.
     """
     # Cell barcodes, sample id of treatment and sample number (33482, 3)
-    metafile_path = DATA_DIR / "thomson" / "meta.csv"
-    doublet_path = DATA_DIR / "thomson" / "ThomsonDoublets.csv"
+    metafile_path = THIS_DIR / "thomson" / "meta.csv"
+    doublet_path = THIS_DIR / "thomson" / "ThomsonDoublets.csv"
     metafile = pd.read_csv(metafile_path, usecols=[0, 1])
 
     X = anndata.read_h5ad(anndata_path)
