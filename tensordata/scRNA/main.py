@@ -1,4 +1,3 @@
-from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import anndata
@@ -10,38 +9,6 @@ from scipy.sparse import csr_matrix, spmatrix
 from sklearn.utils.sparsefuncs import inplace_column_scale, mean_variance_axis
 
 DATA_DIR = Path(__file__).parent / "scRNA"
-
-
-def prepare_dataset(
-    X: anndata.AnnData, condition_name: str, gene_threshold: float
-) -> anndata.AnnData:
-    assert isinstance(X.X, spmatrix)
-    assert np.amin(X.X.data) >= 0.0  # type: ignore
-
-    # Filter out genes with too few reads
-    readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
-    X = X[:, readmean > gene_threshold]
-
-    # Normalize read depth
-    sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True)
-
-    # Scale genes by sum
-    readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
-    readsum = X.shape[0] * readmean
-    inplace_column_scale(X.X, 1.0 / readsum)
-
-    # Transform values
-    X.X.data = np.log10((1000.0 * X.X.data) + 1.0)  # type: ignore
-
-    # Get the indices for subsetting the data
-    _, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
-    X.obs["condition_unique_idxs"] = sgIndex
-
-    # Pre-calculate gene means
-    means, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
-    X.var["means"] = means
-
-    return X
 
 
 def gate_thomson_cells(X) -> npt.ArrayLike:
@@ -98,7 +65,7 @@ def import_thomson(
     X.obs = X.obs.set_index("cell_barcode")
     gate_thomson_cells(X)
 
-    return prepare_dataset(X, "Condition", gene_threshold=gene_threshold)
+    return X
 
 
 def import_lupus(
@@ -160,7 +127,7 @@ def import_lupus(
     # get rid of IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831 (only 3 cells)
     X = X[X.obs["Condition"] != "IGTB1906_IGTB1906:dmx_count_AHCM2CDMXX_YE_0831"]
 
-    return prepare_dataset(X, "Condition", gene_threshold=gene_threshold)
+    return X
 
 
 def import_citeseq(
@@ -169,22 +136,14 @@ def import_citeseq(
     """Imports 5 datasets from Hamad CITEseq."""
     files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
 
-    with ProcessPoolExecutor(max_workers=5) as executor:
-        futures = [
-            executor.submit(
-                sc.read_10x_mtx,
-                data_dir_path / k,
-                gex_only=False,
-                make_unique=True,
-            )
-            for k in files
-        ]
-
-        data = {k: futures[i].result() for i, k in enumerate(files)}
+    data = {
+        k: sc.read_10x_mtx(data_dir_path / k, gex_only=False, make_unique=True)
+        for k in files
+    }
 
     X = anndata.concat(data, merge="same", label="Condition")
 
-    return prepare_dataset(X, "Condition", gene_threshold=0.1)
+    return X
 
 
 def import_HTAN(
@@ -198,27 +157,18 @@ def import_HTAN(
             value is the path on Aretha.
     """
     files = list(HTAN_path.glob("*.mtx.gz"))
-    futures = []
     data = {}
 
-    with ProcessPoolExecutor(max_workers=10) as executor:
-        for filename in files:
-            future = executor.submit(
-                sc.read_10x_mtx,
-                HTAN_path,
-                gex_only=False,
-                make_unique=True,
-                prefix=filename.stem.split("matrix")[0],
-            )
-            futures.append(future)
-
-        for i, filename in enumerate(files):
-            result = futures[i].result()
-            data[filename.stem.split("_matrix")[0]] = result
+    for filename in files:
+        data[filename.stem.split("_matrix")[0]] = sc.read_10x_mtx(
+            HTAN_path,
+            gex_only=False,
+            make_unique=True,
+            prefix=filename.stem.split("matrix")[0],
+        )
 
     X = anndata.concat(data, merge="same", label="Condition")
-
-    return prepare_dataset(X, "Condition", gene_threshold=0.1)
+    return X
 
 
 def import_CCLE(
@@ -250,7 +200,7 @@ def import_CCLE(
     X = anndata.concat(adatas, label="sample")
     X.X = csr_matrix(X.X)
 
-    return prepare_dataset(X, "sample", gene_threshold=0.1)
+    return X
 
 
 def import_cytokine(
@@ -269,4 +219,4 @@ def import_cytokine(
     # Remove multiplexing identifiers
     X = X[:, ~X.var_names.str.match("^CMO3[0-9]{2}$")]  # type: ignore
 
-    return prepare_dataset(X, "Condition", gene_threshold=0.05)
+    return X
