@@ -1,3 +1,4 @@
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import anndata
@@ -133,10 +134,18 @@ def import_citeseq(
     """Imports 5 datasets from Hamad CITEseq."""
     files = ["control", "ic_pod1", "ic_pod7", "sc_pod1", "sc_pod7"]
 
-    data = {
-        k: read_10x_mtx(data_dir_path / k, gex_only=False, make_unique=True)
-        for k in files
-    }
+    with ProcessPoolExecutor(max_workers=5) as executor:
+        futures = [
+            executor.submit(
+                read_10x_mtx,
+                data_dir_path / k,
+                gex_only=False,
+                make_unique=True,
+            )
+            for k in files
+        ]
+
+        data = {k: futures[i].result() for i, k in enumerate(files)}
 
     X = anndata.concat(data, merge="same", label="Condition")
 
@@ -154,7 +163,23 @@ def import_HTAN(
             value is the path on Aretha.
     """
     files = list(HTAN_path.glob("*.mtx.gz"))
+    futures = []
     data = {}
+
+    with ProcessPoolExecutor(max_workers=10) as executor:
+        for filename in files:
+            future = executor.submit(
+                read_10x_mtx,
+                HTAN_path,
+                gex_only=False,
+                make_unique=True,
+                prefix=filename.stem.split("matrix")[0],
+            )
+            futures.append(future)
+
+        for i, filename in enumerate(files):
+            result = futures[i].result()
+            data[filename.stem.split("_matrix")[0]] = result
 
     for filename in files:
         data[filename.stem.split("_matrix")[0]] = read_10x_mtx(
