@@ -1,4 +1,3 @@
-from enum import Enum
 from os import PathLike, fspath
 from pathlib import Path
 from typing import Literal
@@ -7,16 +6,6 @@ import anndata
 import pandas as pd
 from scipy.io import mmread
 from scipy.sparse import csr_matrix
-
-
-class Empty(Enum):
-    token = 0
-
-    def __repr__(self) -> str:
-        return "_empty"
-
-
-_empty = Empty.token
 
 text_exts = {
     "csv",
@@ -42,8 +31,6 @@ def read_10x_mtx(
     *,
     var_names: Literal["gene_symbols", "gene_ids"] = "gene_symbols",
     make_unique: bool = True,
-    cache: bool = False,
-    cache_compression: Literal["gzip", "lzf"] | None | Empty = _empty,
     gex_only: bool = True,
     prefix: str | None = None,
 ) -> anndata.AnnData:
@@ -85,8 +72,6 @@ def read_10x_mtx(
         path,
         var_names=var_names,
         make_unique=make_unique,
-        cache=cache,
-        cache_compression=cache_compression,
         prefix=prefix,
         is_legacy=is_legacy,
     )
