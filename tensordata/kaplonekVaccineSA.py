@@ -27,7 +27,7 @@ def data():
     antigens = list(dict.fromkeys(antigens))
 
     luminex_da = xr.DataArray(
-        np.full((len(df), len(antigens), len(detections)), np.NaN),
+        np.full((len(df), len(antigens), len(detections)), np.nan),
         coords={
             "Subject": df.index,
             "Antigen": antigens,

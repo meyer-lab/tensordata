@@ -95,7 +95,7 @@ def sharedElements(occurence: int, *args):
         if isinstance(arr, xr.DataArray):
             arr = arr.to_numpy()
         cnt.update(arr)
-    return [k for k in cnt.keys() if cnt[k] >= occurence]
+    return [k for k in cnt if cnt[k] >= occurence]
 
 
 def concat4D():

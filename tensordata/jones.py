@@ -18,7 +18,8 @@ donorDict = {
 
 
 def process_RA_Tensor():
-    """Structures all Rheumatoid Arthritis Synovial Fibroblast data into a usable tensor"""
+    """Structures all Rheumatoid Arthritis Synovial Fibroblast data into a
+    usable tensor"""
     RA_df = pd.DataFrame()
     donor_list = ["1869", "1931", "2159", "2586", "2645", "2708", "2759"]
     rep_list = [1, 2]
@@ -59,9 +60,9 @@ def process_RA_Tensor():
             # Background (Spike and Otherwise) Subtraction
             for stimulant in stimulants:
                 if stimulant in avg_data.columns:
-                    avg_data.loc[(avg_data["Stimulant"] == stimulant)][
+                    avg_data.loc[(avg_data["Stimulant"] == stimulant), stimulant][
                         stimulant
-                    ] == np.nan
+                    ] = np.nan
                 spike_row = (
                     avg_data.loc[
                         (avg_data["Stimulant"] == stimulant)
@@ -94,9 +95,7 @@ def process_RA_Tensor():
                         (avg_data["Stimulant"] == stimulant)
                         & (avg_data["Inhibitor"] == inh),
                         cytokines,
-                    ] = (
-                        basal_spike_df.max().to_frame().transpose().values
-                    )
+                    ] = basal_spike_df.max().to_frame().transpose().values
             avg_data[cytokines] = np.log(avg_data[cytokines].values)
             avg_data[cytokines] -= avg_data.loc[
                 avg_data.Stimulant == "Buffer", cytokines
