@@ -134,7 +134,10 @@ def test_kaplonekVaccineSA():
     [import_thomson, import_lupus, import_citeseq, import_HTAN, import_CCLE],
 )
 def test_imports(import_func):
-    X = import_func()
+    try:
+        X = import_func()
+    except FileNotFoundError:
+        pytest.skip(f"File not found for {import_func.__name__}")
     assert len(X.shape) == 2
     assert X.shape[0] > 0
     assert X.X.dtype == np.float32

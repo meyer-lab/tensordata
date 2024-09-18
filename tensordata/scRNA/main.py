@@ -162,6 +162,9 @@ def import_HTAN(
         HTAN_path: Path to the directory containing the HTAN data. The default
             value is the path on Aretha.
     """
+    # check if the path exists
+    if not HTAN_path.exists():
+        raise FileNotFoundError(f"Path {HTAN_path} does not exist")
     files = list(HTAN_path.glob("*.mtx.gz"))
     futures = []
     data = {}
