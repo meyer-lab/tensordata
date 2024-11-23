@@ -1,21 +1,21 @@
 [tool.poetry]
 name = "tensordata"
-version = "0.0.8"
+version = "0.0.9"
 description = "A common repository for tensor structured datasets."
 authors = ["Cyrillus Tan <cyztan@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pandas = ">=1.0"
+pandas = ">=2.0"
 xarray = ">=2023"
-anndata = "^0.10.7"
-numpy = "^1.26"
+anndata = "^0.11"
+numpy = "^2.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^8.2"
-pytest-cov = "^5.0.0"
-ruff = "^0.4.9"
+pytest = "^8.3"
+pytest-cov = "^6.0"
+ruff = "^0.8"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
