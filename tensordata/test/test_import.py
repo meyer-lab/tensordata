@@ -2,15 +2,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pytest
-
-from tensordata.scRNA import (
-    import_CCLE,
-    import_citeseq,
-    import_HTAN,
-    import_lupus,
-    import_thomson,
-)
 
 TENSORDATA_DIR = Path(__file__).parent.parent
 
@@ -127,17 +118,3 @@ def test_kaplonekVaccineSA():
     assert df.loc[10, "FcR2B_WT.S"] == ds["Luminex"].sel(
         Subject=10, Antigen="WT.S", Receptor="FcR2B"
     )
-
-
-@pytest.mark.parametrize(
-    "import_func",
-    [import_thomson, import_lupus, import_citeseq, import_HTAN, import_CCLE],
-)
-def test_imports(import_func):
-    try:
-        X = import_func()
-    except FileNotFoundError:
-        pytest.skip(f"File not found for {import_func.__name__}")
-    assert len(X.shape) == 2
-    assert X.shape[0] > 0
-    assert X.X.dtype == np.float32

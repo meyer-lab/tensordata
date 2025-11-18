@@ -134,4 +134,4 @@ dmypy.json
 
 .ruff_cache
 
-poetry.lock
+uv.lock
