@@ -22,7 +22,9 @@ def data():
         dims=["Subject", "Metadata"],
     )
 
-    detections, antigens = zip(*[col.split("_", 1) for col in luminex_cols])
+    detections, antigens = zip(
+        *[col.split("_", 1) for col in luminex_cols], strict=True
+    )
     detections = list(dict.fromkeys(detections))
     antigens = list(dict.fromkeys(antigens))
 
