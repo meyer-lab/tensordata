@@ -1,22 +1,16 @@
-from os.path import dirname, join
-
 import numpy as np
-import pandas as pd
 
-path_here = dirname(dirname(__file__))
+from .utils import melt_to_xarray, read_dataset_csv
 
 
 def data():
-    df = pd.read_csv(
-        join(path_here, "tensordata/kaplonekVaccine2022/Luminex-functional-assay.csv"),
-        delimiter=",",
-        comment="#",
-    )
+    df = read_dataset_csv("kaplonekVaccine2022", "Luminex-functional-assay")
     df = df.iloc[:, np.r_[1, 15:87]]
-    df = pd.melt(
-        df, id_vars=["Age.at.Presentation"], var_name="Measurement", value_name="Value"
+    return melt_to_xarray(
+        df,
+        id_vars=["Age.at.Presentation"],
+        split_into=["Receptor", "Antigen"],
+        sep="_",
+        index=["Subject", "Antigen", "Receptor"],
+        rename={"Age.at.Presentation": "Subject"},
     )
-    df[["Receptor", "Antigen"]] = df["Measurement"].str.split("_", expand=True)
-    df = df.drop(columns="Measurement")
-    df = df.rename(columns={"Age.at.Presentation": "Subject"})
-    return df.set_index(["Subject", "Antigen", "Receptor"]).to_xarray()["Value"]

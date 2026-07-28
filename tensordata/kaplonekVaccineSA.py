@@ -1,16 +1,14 @@
 import re
-from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import xarray as xr
 
-DATA_DIR = Path(__file__).parent / "kaplonekVaccineSA2023"
+from .utils import read_dataset_csv
 
 
 def data():
     # Separate metadata and luminex data columns
-    df = pd.read_csv(DATA_DIR / "luminex.csv")
+    df = read_dataset_csv("kaplonekVaccineSA2023", "luminex")
 
     luminex_cols = [col for col in df.columns if re.match("^FcR|^Ig[G|M|A]", col)]
     meta_cols = [col for col in df.columns if col not in luminex_cols]

@@ -1,20 +1,13 @@
-from os.path import dirname, join
-
 import numpy as np
 import pandas as pd
 import xarray as xr
 
-path_here = dirname(dirname(__file__))
+from .utils import read_dataset_csv
 
 
 def load_file(name):
     """Return a requested data file."""
-    data = pd.read_csv(
-        join(path_here, "tensordata/alter2018/" + name + ".csv"),
-        delimiter=",",
-        comment="#",
-    )
-    return data
+    return read_dataset_csv("alter2018", name)
 
 
 def data():
@@ -29,7 +22,9 @@ def data():
         coords={"Sample": subjects, "Receptor": detections, "Antigen": antigen},
         dims=["Sample", "Receptor", "Antigen"],
     )
-    cube = cube.stack(index=("Sample", "Receptor", "Antigen")).to_pandas().reset_index()
+    stacked = cube.stack(index=("Sample", "Receptor", "Antigen")).to_pandas()
+    assert isinstance(stacked, pd.Series)
+    cube = stacked.reset_index()
     cube["Measurement"] = cube["Receptor"] + "." + cube["Antigen"]
 
     df = load_file("data-luminex")
