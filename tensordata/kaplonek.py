@@ -1,19 +1,12 @@
-from os.path import dirname, join
-
 import numpy as np
 import pandas as pd
 
-path_here = dirname(dirname(__file__))
+from .utils import melt_to_xarray, read_dataset_csv
 
 
 def load_file(name):
     """Return a requested data file."""
-    data = pd.read_csv(
-        join(path_here, "tensordata/kaplonek2021/" + name + ".csv"),
-        delimiter=",",
-        comment="#",
-    )
-    return data
+    return read_dataset_csv("kaplonek2021", name)
 
 
 def SpaceX4D():
@@ -21,13 +14,14 @@ def SpaceX4D():
     meta = load_file("SpaceX_meta.data")
     df = pd.concat([data, meta], join="outer", axis=1)
     df = df.drop(columns="Unnamed: 0")
-    df = pd.melt(
-        df, id_vars=["Pat.ID", "time.point"], var_name="Measurement", value_name="Value"
+    return melt_to_xarray(
+        df,
+        id_vars=["Pat.ID", "time.point"],
+        split_into=["Antigen", "Receptor"],
+        sep="-",
+        index=["Subject", "Antigen", "Receptor", "Time"],
+        rename={"Pat.ID": "Subject", "time.point": "Time"},
     )
-    df[["Antigen", "Receptor"]] = df["Measurement"].str.split("-", expand=True)
-    df = df.drop(columns="Measurement")
-    df = df.rename(columns={"Pat.ID": "Subject", "time.point": "Time"})
-    return df.set_index(["Subject", "Antigen", "Receptor", "Time"]).to_xarray()["Value"]
 
 
 def MGH4D():

@@ -6,7 +6,7 @@ from .zohar import data as Zohar
 
 
 def checkMissingess(cube):
-    return 1 - np.sum(np.isfinite(cube)) / np.product(cube.shape)
+    return 1 - np.sum(np.isfinite(cube)) / np.prod(cube.shape)
 
 
 def normalizeSubj(cube):
@@ -62,9 +62,8 @@ Z_dict = {
     ]
 }
 
-""" Set consistent naming between the three DataArrays """
 
-
+# Set consistent naming between the three DataArrays
 def serology_rename():
     M, S, Z = MGH4D()["Serology"], SpaceX4D(), Zohar()
 
@@ -75,9 +74,7 @@ def serology_rename():
     return M.assign_coords(M_dict), S.assign_coords(S_dict), Z.assign_coords(Z_dict)
 
 
-""" Assemble the concatenated COVID tensor in 3D """
-
-
+# Assemble the concatenated COVID tensor in 3D
 def importConcat():
     M, S, Z = serology_rename()
     cube = S.combine_first(M).combine_first(Z)
@@ -100,7 +97,6 @@ def sharedElements(occurence: int, *args):
 
 def concat4D():
     M = MGH4D()["Serology"].assign_coords(M_dict)
-    # M = normalizeSubj(M)
     M = M.rename({"Subject": "Subject_MGH", "Time": "Time_MGH"})
     M.name = "MGH"
 

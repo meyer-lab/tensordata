@@ -1,14 +1,11 @@
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 
-THIS_DIR_PATH = Path(__file__).parent
-DATA_PATH = THIS_DIR_PATH / "zohar2020" / "ZoharCovData.csv"
+from .utils import melt_to_xarray, read_dataset_csv
 
 
 def data(subtract_baseline=False):
-    df = pd.read_csv(DATA_PATH)
+    df = read_dataset_csv("zohar2020", "ZoharCovData")
     baseline = df.loc[df["sample_ID"] == "PBS"].iloc[:, 23:89].values.squeeze()
     df = df.loc[np.isfinite(df["patient_ID"]), :]
     df["patient_ID"] = df["patient_ID"].astype("int32")
@@ -20,7 +17,10 @@ def data(subtract_baseline=False):
         df.iloc[:, 1:] -= baseline
 
     df = df.rename(columns={"sample_ID": "Sample"})
-    df = pd.melt(df, id_vars="Sample", var_name="Measurement", value_name="Value")
-    df[["Receptor", "Antigen"]] = df["Measurement"].str.split("_", expand=True)
-    df = df.drop(columns="Measurement")
-    return df.set_index(["Sample", "Antigen", "Receptor"]).to_xarray()["Value"]
+    return melt_to_xarray(
+        df,
+        id_vars=["Sample"],
+        split_into=["Receptor", "Antigen"],
+        sep="_",
+        index=["Sample", "Antigen", "Receptor"],
+    )

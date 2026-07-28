@@ -1,10 +1,10 @@
-from os.path import dirname, exists, join
-
 import numpy as np
 import pandas as pd
-import xarray as xr
 
-path_here = dirname(dirname(__file__))
+from .utils import PACKAGE_DIR, read_dataset_csv
+
+DATASET_DIR = "jones2017"
+RA_DATAFRAME_PATH = PACKAGE_DIR / DATASET_DIR / "RA_DataFrame.csv"
 
 donorDict = {
     "1869": "RA",
@@ -21,22 +21,13 @@ def process_RA_Tensor():
     """Structures all Rheumatoid Arthritis Synovial Fibroblast data into a
     usable tensor"""
     RA_df = pd.DataFrame()
-    donor_list = ["1869", "1931", "2159", "2586", "2645", "2708", "2759"]
     rep_list = [1, 2]
     stimulants = ["IL1-a", "TNF-a", "PolyIC"]
 
-    for donor in donor_list:
+    for donor in donorDict:
         for rep in rep_list:
-            file_name = (
-                "tensordata/jones2017/SF_Donor_"
-                + donor
-                + "_"
-                + donorDict[donor]
-                + "_Rep"
-                + str(rep)
-                + ".csv"
-            )
-            raw_data = pd.read_csv(join(path_here, file_name))
+            file_name = f"SF_Donor_{donor}_{donorDict[donor]}_Rep{rep}"
+            raw_data = read_dataset_csv(DATASET_DIR, file_name)
             avg_data = (
                 raw_data.groupby(["Sample Name"]).mean(numeric_only=True).reset_index()
             )
@@ -123,50 +114,26 @@ def process_RA_Tensor():
         .mean()
         .reset_index()
     )
-    RA_df.to_csv("tensordata/jones2017/RA_DataFrame.csv")
+    RA_df.to_csv(RA_DATAFRAME_PATH)
     return RA_df
 
 
 def make_RA_Tensor():
     """Processes RA DataFrame into Xarray Tensor"""
-    if exists("tensordata/jones2017/RA_DataFrame.csv"):
-        RA_df = pd.read_csv("tensordata/jones2017/RA_DataFrame.csv")
-    else:
-        RA_df = process_RA_Tensor()
-
-    stimulants = RA_df.Stimulant.unique()
-    inhibitors = RA_df.Inhibitor.unique()
-    cytokines = RA_df.Cytokine.unique()
-    donors = RA_df.Donor.unique()
-
-    tensor = np.empty((len(stimulants), len(inhibitors), len(cytokines), len(donors)))
-    tensor[:] = np.nan
-    for i, stim in enumerate(stimulants):
-        for j, inh in enumerate(inhibitors):
-            for k, cyto in enumerate(cytokines):
-                for ii, donor in enumerate(donors):
-                    if stim != inh:
-                        entry = RA_df.loc[
-                            (RA_df.Stimulant == stim)
-                            & (RA_df.Inhibitor == inh)
-                            & (RA_df.Cytokine == cyto)
-                            & (RA_df.Donor == donor)
-                        ]["Log MFI"].values
-                        tensor[i, j, k, ii] = np.mean(entry)
-    # Normalize
-    for i, _ in enumerate(cytokines):
-        tensor[:, :, i, :][~np.isnan(tensor[:, :, i, :])] /= np.nanmax(
-            tensor[:, :, i, :]
-        )
-
-    RA_xarray = xr.DataArray(
-        tensor,
-        dims=("Stimulant", "Inhibitor", "Cytokine", "Donor"),
-        coords={
-            "Stimulant": stimulants,
-            "Inhibitor": inhibitors,
-            "Cytokine": cytokines,
-            "Donor": donors,
-        },
+    RA_df = (
+        pd.read_csv(RA_DATAFRAME_PATH)
+        if RA_DATAFRAME_PATH.exists()
+        else process_RA_Tensor()
     )
-    return RA_xarray
+
+    # A stimulant can't inhibit itself; every other Stimulant/Inhibitor/
+    # Cytokine/Donor combination not present in RA_df is filled with NaN.
+    RA_df = RA_df[RA_df["Stimulant"] != RA_df["Inhibitor"]]
+    tensor = RA_df.set_index(["Stimulant", "Inhibitor", "Cytokine", "Donor"])[
+        "Log MFI"
+    ].to_xarray()
+
+    # Normalize each cytokine's slice by its own maximum
+    tensor = tensor / tensor.max(dim=["Stimulant", "Inhibitor", "Donor"], skipna=True)
+
+    return tensor
