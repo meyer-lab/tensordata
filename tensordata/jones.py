@@ -51,9 +51,7 @@ def process_RA_Tensor():
             # Background (Spike and Otherwise) Subtraction
             for stimulant in stimulants:
                 if stimulant in avg_data.columns:
-                    avg_data.loc[(avg_data["Stimulant"] == stimulant), stimulant][
-                        stimulant
-                    ] = np.nan
+                    avg_data.loc[avg_data["Stimulant"] == stimulant, stimulant] = np.nan
                 spike_row = (
                     avg_data.loc[
                         (avg_data["Stimulant"] == stimulant)

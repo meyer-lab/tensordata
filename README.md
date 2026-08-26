@@ -28,7 +28,7 @@ Each dataset lives in its own module and exposes a `data()` function (or, for a 
 from tensordata.zohar import data
 
 dx = data()
-print(dx.dims)     # ('Sample', 'Antigen', 'Receptor')
+print(dx.dims)  # ('Sample', 'Antigen', 'Receptor')
 print(dx.shape)
 
 # Select a slice by coordinate label
@@ -41,9 +41,9 @@ Convert any `DataArray` to a plain NumPy tensor (plus its axis labels) with the 
 from tensordata.utils import xr_to_bunch
 
 bunch = xr_to_bunch(dx)
-bunch.tensor   # numpy.ndarray
-bunch.mode     # list of dimension names, e.g. ["Sample", "Antigen", "Receptor"]
-bunch.axes     # list of coordinate arrays, one per dimension
+bunch.tensor  # numpy.ndarray
+bunch.mode  # list of dimension names, e.g. ["Sample", "Antigen", "Receptor"]
+bunch.axes  # list of coordinate arrays, one per dimension
 ```
 
 ## Available datasets

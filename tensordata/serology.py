@@ -116,4 +116,4 @@ def concat4D():
         A = A.where(A.Antigen.isin(common_antigens), drop=True)
         return A
 
-    return xr.combine_by_coords([commonRA(M), commonRA(S), commonRA(Z)])
+    return xr.combine_by_coords([commonRA(M), commonRA(S), commonRA(Z)], join="outer")
