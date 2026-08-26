@@ -1,8 +1,5 @@
 # tensordata
 
-[![Test](https://github.com/meyer-lab/tensordata/actions/workflows/pytest.yml/badge.svg)](https://github.com/meyer-lab/tensordata/actions/workflows/pytest.yml)
-[![Code Quality](https://github.com/meyer-lab/tensordata/actions/workflows/code_quality.yml/badge.svg)](https://github.com/meyer-lab/tensordata/actions/workflows/code_quality.yml)
-
 A common repository for tensor structured datasets, developed and maintained by the [Meyer Lab](https://github.com/meyer-lab).
 
 `tensordata` bundles a collection of published systems serology / immunology datasets together with loader functions that reshape each dataset's raw, wide-format CSVs into labeled, multi-dimensional [xarray](https://docs.xarray.dev/) `DataArray`/`Dataset` objects. This makes the data immediately usable for tensor factorization and other multi-way analyses without needing to hand-write reshaping code for every dataset.
@@ -97,12 +94,6 @@ or directly with pytest:
 uv run pytest -s -v -x
 ```
 
-Generate a coverage report:
-
-```bash
-make coverage.xml
-```
-
 Lint and type-check:
 
 ```bash
@@ -111,7 +102,7 @@ uv run ruff format --check .
 uv run ty check
 ```
 
-Continuous integration (GitHub Actions) runs the test suite and code quality checks on every push, and uploads coverage results to Codecov.
+Continuous integration (GitHub Actions) runs the test suite and code quality checks on every push.
 
 ## License
 

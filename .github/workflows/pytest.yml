@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - name: Install the latest version of uv
@@ -14,12 +14,4 @@ jobs:
       - name: Install dependencies
         run: uv sync
       - name: Test with pytest
-        run: make coverage.xml
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.xml
-          flags: unittests
-          env_vars: OS,PYTHON
-          name: codecov-umbrella
-          fail_ci_if_error: false
+        run: uv run pytest -s -v -x
